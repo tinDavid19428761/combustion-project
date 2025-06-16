@@ -23,6 +23,7 @@ from idaes.models.unit_models import (
 Mixer,
 StoichiometricReactor,
 Heater,
+HeatExchanger
 )
 
 from idaes.models.unit_models.pressure_changer import ThermodynamicAssumption
@@ -41,6 +42,9 @@ from idaes.models.properties.general_helmholtz import (
         AmountBasis,
         PhaseType,
     )
+from idaes.models.unit_models.heat_exchanger import delta_temperature_amtd_callback, HX0DInitializer
+
+from idaes.core.util.model_statistics import degrees_of_freedom
 
 m = ConcreteModel()
 
@@ -56,11 +60,6 @@ m.fs.steam_properties = HelmholtzParameterBlock(
         phase_presentation=PhaseType.LG,
     )
 
-# m.fs.dsi.properties_steam_in[0].enth_mol.fix(
-#     m.fs.steam_properties.htpx(p=101325 * pyunits.Pa, T= 300 * pyunits.K)
-# )
-
-from idaes.core.util.model_statistics import degrees_of_freedom
 
 
 # creating reactor unit
@@ -77,18 +76,25 @@ m.fs.R101 = StoichiometricReactor(
     has_pressure_change=False,
 )
 
-m.fs.H101 = Heater(
-    property_package = m.fs.steam_properties,
-    has_pressure_change=False,
-    has_phase_equilibrium=False,
+#flue-water heat exchanger
+m.fs.E101 = HeatExchanger(
+    delta_temperature_callback=delta_temperature_amtd_callback,
+    hot_side_name="shell",
+    cold_side_name="tube",
+    shell={"property_package": m.fs.methane_properties},
+    tube={"property_package": m.fs.steam_properties}
 )
-
 
 #reactor flow sheet feed via mixer -> reactor -> product via separator
 
 m.fs.s01 = Arc(source=m.fs.M101.outlet,destination=m.fs.R101.inlet)
+m.fs.s02 = Arc(source=m.fs.R101.outlet,destination=m.fs.E101.shell_inlet)
 
 TransformationFactory("network.expand_arcs").apply_to(m)
+
+
+def O2feed(flowCH4,excess):
+    return flowCH4*2*(1+excess), flowCH4*2*79/21*(1+excess)
 
 # check sufficient O2 for given feed and completeness, then calc R1,R2 reaction extents
 def stoichExtents(flowCH4,flowO2,complete): #returns extentCO2, extentCO
@@ -98,18 +104,11 @@ def stoichExtents(flowCH4,flowO2,complete): #returns extentCO2, extentCO
     else:
         return complete*(flowO2/((complete*2)+((1-complete)*1.5))), (1-complete)*(flowO2/((complete*2)+((1-complete)*1.5)))
 
-def O2feed(flowCH4,excess):
-    return flowCH4*2*(1+excess), flowCH4*2*79/21*(1+excess)
 
 flowCH4=0.2
 completeness=0.7
 excessAir=0.5
 
-#hard-specified air feed.
-# flowO2=0.3
-# flowN2=flowO2*79/21
-
-#air feed specified by excess air:
 flowO2,flowN2 = O2feed(flowCH4,excessAir)
 extentCO2, extentCO = stoichExtents(flowCH4,flowO2,completeness)
 
@@ -121,7 +120,7 @@ m.fs.M101.methane_feed.mole_frac_comp[0,"CH4"].fix(flowCH4/flowTotal)
 m.fs.M101.methane_feed.mole_frac_comp[0,"CO2"].fix(1e-20)
 m.fs.M101.methane_feed.mole_frac_comp[0,"H2O"].fix(1e-20) 
 m.fs.M101.methane_feed.mole_frac_comp[0,"CO"].fix(1e-20) 
-m.fs.M101.methane_feed.temperature.fix(1100)
+m.fs.M101.methane_feed.temperature.fix(1000)
 m.fs.M101.methane_feed.pressure.fix(10000)
 m.fs.M101.methane_feed.flow_mol.fix(flowTotal)
 
@@ -147,36 +146,38 @@ m.fs.R101.extent_match = Constraint(
 
 m.fs.R101.extent_R1[0.0].fix(extentCO2) 
 m.fs.R101.extent_R2[0.0].fix(extentCO) 
-m.fs.R101.outlet.temperature.fix(500)
+m.fs.R101.outlet.temperature.unfix()
+m.fs.R101.heat_duty.fix(0)
+
+print(degrees_of_freedom(m))
 
 m.fs.R101.initialize()
-#solve reactor
+
+#specifying heat exchanger
+m.fs.E101.area.fix(0.1)
+m.fs.E101.overall_heat_transfer_coefficient[0].fix(100)
+m.fs.E101.tube_inlet.flow_mol.fix(0.2)
+m.fs.E101.tube_inlet.pressure.fix(101325)
+m.fs.E101.tube_inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=290*pyunits.K))
+
+initializer = HX0DInitializer()
+initializer.initialize(m.fs.E101)
+
+# re-specifying. Solves for 
+m.fs.E101.area.unfix()
+m.fs.E101.tube_outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=400*pyunits.K))
+m.fs.E101.tube_inlet.flow_mol.unfix()
+m.fs.E101.shell_outlet.temperature.fix(500)
+print(degrees_of_freedom(m))
+
 solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)
 
-#steam generation specification
-steam_pressure = 101325
-T_water_in=300
-T_water_out=340
-enth_in=m.fs.steam_properties.htpx(p=steam_pressure * pyunits.Pa, T= T_water_in * pyunits.K)
-enth_out=m.fs.steam_properties.htpx(p=steam_pressure * pyunits.Pa, T= T_water_out * pyunits.K)
+print(degrees_of_freedom(m))
 
-#steam_gen for initialization purposes
-initSteam = 10
-
-m.fs.H101.inlet.flow_mol.fix(initSteam)
-m.fs.H101.inlet.enth_mol.fix(enth_in)
-m.fs.H101.inlet.pressure.fix(steam_pressure)
-m.fs.H101.heat_duty.fix(-value(m.fs.R101.heat_duty[0]))
-
-m.fs.H101.initialize(outlvl=idaeslog.INFO)
-
-#re-specifying .fix's
-m.fs.H101.inlet.flow_mol.unfix()
-m.fs.H101.outlet.enth_mol.fix(enth_out)
-#solve fow steam generation flow
-solver=SolverFactory("ipopt")
-status=solver.solve(m,tee=True)
-
+# print(value(m.fs.R101.outlet.temperature[0]))
+m.fs.E101.report()
 m.fs.R101.report()
-m.fs.H101.report()
+print(f"{extentCO: .5}")
+print(f"{extentCO2: .5}")
+print(f"{flowO2: .5}")
