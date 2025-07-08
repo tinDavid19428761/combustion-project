@@ -13,6 +13,7 @@
 """
 Property package for the hydrodealkylation of toluene to form benzene
 """
+from pyomo.environ import Expression
 
 # Import Python libraries
 import logging
@@ -90,10 +91,9 @@ class CH4CombReactionParameterData(ReactionParameterBlock):
         
         self.reactant_list=Set(initialize=["CH4","O2"])
 
-        # Heat of Reaction
-        #dh_rxn is unused, instead calculated by dh,formation 
-        dh_rxn_dict = {"R1": -802.6,
-                       "R2": -520
+        # Heat of Reaction (J/mol), by externally calculated dh_formation balance.
+        dh_rxn_dict = {"R1": -802600,
+                       "R2": -520000
                        }
         self.dh_rxn = Param(self.rate_reaction_idx, 
                             initialize=dh_rxn_dict,
@@ -128,15 +128,8 @@ class ReactionBlock(ReactionBlockBase):
             _log.info('{} Initialization Complete.'.format(blk.name))
 
 
-@declare_process_block_class("CH4ReactionBlock",
-                             block_class=ReactionBlock)
-
+@declare_process_block_class("CH4ReactionBlock", block_class=ReactionBlock)
 class CH4ReactionBlockData(ReactionBlockDataBase):
-
-    """
-    An example reaction package for saponification of ethyl acetate
-    """
-
     def build(self):
         """
         Callable method for Block construction
