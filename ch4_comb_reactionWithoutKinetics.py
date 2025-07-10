@@ -55,14 +55,16 @@ class CH4CombReactionParameterData(ReactionParameterBlock):
         self._reaction_block_class = CH4ReactionBlock
 
         # List of valid phases in property package
-        self.phase_list = Set(initialize=['Vap'])
+        self.phase_list = Set(initialize=['Vap', 'Sol'])
 
         # Component list - a list of component identifiers
         self.component_list = Set(initialize=['H2O',
                                               'CO2',
                                               'CH4',
                                               'O2',
-                                              'CO'])
+                                              'CO',
+                                              'N2',
+                                              'carbon'])
 
         # Reaction Index
         self.rate_reaction_idx = Set(initialize=["R1","R2"])
@@ -74,12 +76,6 @@ class CH4CombReactionParameterData(ReactionParameterBlock):
                                             ("R1", "Vap", "O2"): -2,
                                             ("R1", "Vap", "N2"): 0,
                                             ("R1", "Vap", "CO"): 0,
-                                            ("R1", "Liq", "CO2"): 0,
-                                            ("R1", "Liq", "CH4"): 0,
-                                            ("R1", "Liq", "H2O"): 0,
-                                            ("R1", "Liq", "O2"): 0,
-                                            ("R1", "Liq", "N2"): 0,
-                                            ("R1", "Liq", "CO"): 0,
                                             
                                             ("R2", "Vap", "CH4"): -1,
                                             ("R2", "Vap", "O2"): -1.5,
@@ -87,23 +83,17 @@ class CH4CombReactionParameterData(ReactionParameterBlock):
                                             ("R2", "Vap", "H2O"): 2,
                                             ("R2", "Vap", "CO2"): 0,
                                             ("R2", "Vap", "N2"): 0,
-                                            ("R2", "Liq", "CO2"): 0,
-                                            ("R2", "Liq", "CH4"): 0,
-                                            ("R2", "Liq", "H2O"): 0,
-                                            ("R2", "Liq", "O2"): 0,
-                                            ("R2", "Liq", "N2"): 0,
-                                            ("R2", "Liq", "CO"): 0,
                                             }
 
         
         self.reactant_list=Set(initialize=["CH4","O2"])
 
         # Heat of Reaction
-        #engineering toolbox
+        #dh_rxn is unused because 
         dh_rxn_dict = {"R1": -802.6,
                        "R2": -520
                        }
-        self.dh_rxn = Param(self.rate_reaction_idx,
+        self.dh_rxn = Param(self.rate_reaction_idx, 
                             initialize=dh_rxn_dict,
                             units=pyunits.J/pyunits.mol,
                             doc="Heat of reaction")

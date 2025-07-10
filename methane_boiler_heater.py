@@ -3,6 +3,11 @@
 Created on Mon Sep  4 14:18:30 2023
 
 @author: bjl25
+
+validation notes:
+validated in excel
+heat of reaction validated as heat of formations
+temperature raise and boiling validated
 """
 #Importing required pyomo and idaes components
 from pyomo.environ import (
@@ -147,7 +152,7 @@ m.fs.R101.extent_match = Constraint(
 
 m.fs.R101.extent_R1[0.0].fix(extentCO2) 
 m.fs.R101.extent_R2[0.0].fix(extentCO) 
-m.fs.R101.outlet.temperature.fix(500)
+m.fs.R101.outlet.temperature.fix(1099.9)
 
 m.fs.R101.initialize()
 #solve reactor
@@ -157,7 +162,7 @@ status=solver.solve(m,tee=True)
 #steam generation specification
 steam_pressure = 101325
 T_water_in=300
-T_water_out=340
+T_water_out=380
 enth_in=m.fs.steam_properties.htpx(p=steam_pressure * pyunits.Pa, T= T_water_in * pyunits.K)
 enth_out=m.fs.steam_properties.htpx(p=steam_pressure * pyunits.Pa, T= T_water_out * pyunits.K)
 

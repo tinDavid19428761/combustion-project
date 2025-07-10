@@ -73,7 +73,7 @@ m.fs.M101 = Mixer(
     property_package = m.fs.methane_properties,
     inlet_list=["methane_feed"]
 )
-
+#
 m.fs.R101 = StoichiometricReactor(
     property_package = m.fs.methane_properties,
     reaction_package = m.fs.reaction_params,
@@ -174,7 +174,6 @@ m.fs.H101.inlet.flow_mol.fix(initSteam)
 m.fs.H101.inlet.enth_mol.fix(enth_in)
 m.fs.H101.inlet.pressure.fix(steam_pressure)
 m.fs.H101.heat_duty.fix(-value(m.fs.R101.heat_duty[0]))
-
 m.fs.H101.initialize(outlvl=idaeslog.INFO)
 
 #re-specifying .fix's
@@ -183,6 +182,8 @@ m.fs.H101.outlet.enth_mol.fix(enth_out)
 #solve fow steam generation flow
 solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)
+print(value(m.fs.R101.heat_duty[0]))
+print(value(m.fs.H101.heat_duty[0]))
 
 m.fs.R101.report()
 m.fs.H101.report()

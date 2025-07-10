@@ -167,7 +167,7 @@ initializer.initialize(m.fs.E101)
 m.fs.E101.area.unfix()
 m.fs.E101.tube_outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=400*pyunits.K))
 m.fs.E101.tube_inlet.flow_mol.unfix()
-m.fs.E101.shell_outlet.temperature.fix(500)
+m.fs.E101.shell_outlet.temperature.fix(1100)
 print(degrees_of_freedom(m))
 
 solver=SolverFactory("ipopt")

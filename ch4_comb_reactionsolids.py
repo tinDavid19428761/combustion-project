@@ -61,8 +61,8 @@ class CH4CombReactionParameterData(ReactionParameterBlock):
         # Component list - a list of component identifiers
         self.component_list = Set(initialize=['H2O',
                                               'CO2',
-                                              'CH4',
                                               'O2',
+                                              'CH4',
                                               'CO',
                                               'N2',
                                               'carbon'])
