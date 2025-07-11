@@ -60,6 +60,7 @@ configuration = {
             "dens_mol_sol_comp": ConstantProperties.Constant,
             'valid_phase_types': PT.solidPhase,
             "parameter_data": {
+                "mw": (162.1394, pyunits.g / pyunits.mol),
                 "cp_mol_sol_comp_coeff": (243.2091, pyunits.J/pyunits.mol/pyunits.K),
                 "dens_mol_sol_comp_coeff": (2960.415544, pyunits.mol/pyunits.m**3), #62168.73
                 "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),

@@ -54,6 +54,8 @@ m.fs.biomass_properties = GenericParameterBlock(**configuration)
 m.fs.reaction_params = BMCombReactionParameterBlock(
     property_package=m.fs.biomass_properties
 )
+m.fs.reaction_params.h.fix(0.06)
+m.fs.reaction_params.w.fix(0.09)
 
 m.fs.steam_properties = HelmholtzParameterBlock(
         pure_component="h2o", amount_basis=AmountBasis.MOLE,
@@ -94,18 +96,17 @@ TransformationFactory("network.expand_arcs").apply_to(m)
 
 
 flowTotal = 1
-extentR1 = 0.01*flowTotal #absolute extent of reaction
+extentR1 = 0.005*flowTotal #absolute extent of reaction
 
-m.fs.M101.biomass_feed.mole_frac_comp[0,"N2"].fix(0.5)
-m.fs.M101.biomass_feed.mole_frac_comp[0,"O2"].fix(0.47)
+m.fs.M101.biomass_feed.mole_frac_comp[0,"N2"].fix(0.7)
+m.fs.M101.biomass_feed.mole_frac_comp[0,"O2"].fix(0.295)
 m.fs.M101.biomass_feed.mole_frac_comp[0,"CO2"].fix(1e-20)
 m.fs.M101.biomass_feed.mole_frac_comp[0,"H2O"].fix(1e-20) 
 m.fs.M101.biomass_feed.mole_frac_comp[0,"CO"].fix(1e-20) 
-m.fs.M101.biomass_feed.mole_frac_comp[0,"biomass"].fix(0.03) 
+m.fs.M101.biomass_feed.mole_frac_comp[0,"biomass"].fix(0.005) 
 m.fs.M101.biomass_feed.temperature.fix(350)
 m.fs.M101.biomass_feed.pressure.fix(101325)
 m.fs.M101.biomass_feed.flow_mol.fix(flowTotal)
-
 
 # Add variables for extent of each reaction (mol/s)
 m.fs.R101.extent_R1 = Var(m.fs.time, initialize=extentR1, units=pyunits.mol/pyunits.s)
@@ -130,27 +131,30 @@ print(degrees_of_freedom(m))
 m.fs.R101.initialize()
 
 #specifying heat exchanger
-m.fs.E101.area.fix(0.1)
+m.fs.E101.area.fix(0.25)
 m.fs.E101.overall_heat_transfer_coefficient[0].fix(100)
-m.fs.E101.tube_inlet.flow_mol.fix(0.2)
+m.fs.E101.tube_inlet.flow_mol.fix(0.05)
 m.fs.E101.tube_inlet.pressure.fix(101325)
 m.fs.E101.tube_inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=290*pyunits.K))
 
 initializer = HX0DInitializer()
 initializer.initialize(m.fs.E101)
 
-# re-specifying. Solves for 
+m.fs.E101.shell_outlet.temperature.fix(400)
 m.fs.E101.area.unfix()
-m.fs.E101.tube_outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=400*pyunits.K))
 m.fs.E101.tube_inlet.flow_mol.unfix()
-m.fs.E101.shell_outlet.temperature.fix(500)
+m.fs.E101.tube_outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=380*pyunits.K))
+
 print(degrees_of_freedom(m))
 
 solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)
 
 print(degrees_of_freedom(m))
+assert degrees_of_freedom(m) == 0
 
 # print(value(m.fs.R101.outlet.temperature[0]))
 m.fs.E101.report()
 m.fs.R101.report()
+print(value(m.fs.reaction_params.ncv))
+print(value(m.fs.R101.extent_R1[0.0]))

@@ -80,12 +80,23 @@ class BMCombReactionParameterData(ReactionParameterBlock):
 
         
         self.reactant_list=Set(initialize=["biomass","O2"])
+        
+        self.h=Var(initialize=0.06) #concentration of hydrogen as a percentage of weight, h=6%
+        self.w=Var(initialize=0.09) #water content of fuel as percentage of weight
+        self.gcv=Param(initialize=20.2, units=pyunits.MJ/pyunits.kg, doc="gross calorific value") #gross calorific value (dry basis)
+        self.ncv=(self.gcv*(1-self.w)-2.447*self.w-2.447*self.h*9.01*(1-self.w))*162.1394*1000 #J/mol 
+        #net calorific value (wet basis) (pg. 7) https://www.mbie.govt.nz/dmsdocument/125-industrial-bioenergy-
+        #ncv multiplied by 162 g/mo (cellulose) to convert from /mass to /mol basis.
 
         # Heat of Reaction (J/mol), by externally calculated dh_formation balance.
-        dh_rxn_dict = {"R1":    -2749556.40} #2.7e6
-        self.dh_rxn = Param(self.rate_reaction_idx, 
-                            initialize=dh_rxn_dict,
-                            units=pyunits.J/pyunits.mol,
+        dh_rxn_dict = {"R1": -self.ncv} # w=9%, h=6% ncv=-2749556.40
+        
+        def dh_rxn(b,reaction_index):
+            # only one reaction index, so we are just setting it to the ncv
+            return -self.ncv
+
+        self.dh_rxn = Expression(self.rate_reaction_idx, 
+                            rule=dh_rxn,
                             doc="Heat of reaction")
 
     @classmethod
