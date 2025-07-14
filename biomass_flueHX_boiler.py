@@ -104,7 +104,7 @@ m.fs.M101.biomass_feed.mole_frac_comp[0,"CO2"].fix(1e-20)
 m.fs.M101.biomass_feed.mole_frac_comp[0,"H2O"].fix(1e-20) 
 m.fs.M101.biomass_feed.mole_frac_comp[0,"CO"].fix(1e-20) 
 m.fs.M101.biomass_feed.mole_frac_comp[0,"biomass"].fix(0.005) 
-m.fs.M101.biomass_feed.temperature.fix(350)
+m.fs.M101.biomass_feed.temperature.fix(500)
 m.fs.M101.biomass_feed.pressure.fix(101325)
 m.fs.M101.biomass_feed.flow_mol.fix(flowTotal)
 
@@ -133,17 +133,17 @@ m.fs.R101.initialize()
 #specifying heat exchanger
 m.fs.E101.area.fix(0.25)
 m.fs.E101.overall_heat_transfer_coefficient[0].fix(100)
-m.fs.E101.tube_inlet.flow_mol.fix(0.05)
+m.fs.E101.tube_inlet.flow_mol.fix(0.1)
 m.fs.E101.tube_inlet.pressure.fix(101325)
 m.fs.E101.tube_inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=290*pyunits.K))
 
 initializer = HX0DInitializer()
 initializer.initialize(m.fs.E101)
 
-m.fs.E101.shell_outlet.temperature.fix(400)
+# m.fs.E101.shell_outlet.temperature.fix(600)
 m.fs.E101.area.unfix()
-m.fs.E101.tube_inlet.flow_mol.unfix()
-m.fs.E101.tube_outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=380*pyunits.K))
+# m.fs.E101.tube_inlet.flow_mol.unfix()
+m.fs.E101.tube_outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=400*pyunits.K))
 
 print(degrees_of_freedom(m))
 
