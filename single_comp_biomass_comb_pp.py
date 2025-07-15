@@ -1,11 +1,5 @@
 """
-Benzene-Toluene phase equilibrium package using ideal liquid and vapor.
-
-Example property package using the Generic Property Package Framework.
-This exmample shows how to set up a property package to do benzene-toluene
-phase equilibrium in the generic framework using ideal liquid and vapor
-assumptions along with methods drawn from the pre-built IDAES property
-libraries.
+Property package for the combustion of biomass in air
 """
 # Import Pyomo units
 from pyomo.environ import units as pyunits

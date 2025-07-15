@@ -1,17 +1,5 @@
-#################################################################################
-# The Institute for the Design of Advanced Energy Systems Integrated Platform
-# Framework (IDAES IP) was produced under the DOE Institute for the
-# Design of Advanced Energy Systems (IDAES), and is copyright (c) 2018-2022
-# by the software owners: The Regents of the University of California, through
-# Lawrence Berkeley National Laboratory,  National Technology & Engineering
-# Solutions of Sandia, LLC, Carnegie Mellon University, West Virginia University
-# Research Corporation, et al.  All rights reserved.
-#
-# Please see the files COPYRIGHT.md and LICENSE.md for full copyright and
-# license information.
-#################################################################################
 """
-Property package for the hydrodealkylation of toluene to form benzene
+reaction package for the combustion of biomass in air
 """
 from pyomo.environ import Expression
 
@@ -73,9 +61,9 @@ class BMCombReactionParameterData(ReactionParameterBlock):
         self.rate_reaction_stoichiometry = {("R1", "Vap", "H2O"): 5,
                                             ("R1", "Vap", "CO2"): 6,
                                             ("R1", "Vap", "O2"): -6,
+                                            ("R1", "Sol", "biomass"): -1,
                                             ("R1", "Vap", "N2"): 0,
                                             ("R1", "Vap", "CO"): 0,
-                                            ("R1", "Sol", "biomass"): -1,
                                             }
 
         
@@ -88,7 +76,6 @@ class BMCombReactionParameterData(ReactionParameterBlock):
         #net calorific value (wet basis) (pg. 7) https://www.mbie.govt.nz/dmsdocument/125-industrial-bioenergy-
         #ncv multiplied by 162 g/mo (cellulose) to convert from /mass to /mol basis.
 
-        # Heat of Reaction (J/mol), by externally calculated dh_formation balance.
         dh_rxn_dict = {"R1": -self.ncv} # w=9%, h=6% ncv=-2749556.40
         
         def dh_rxn(b,reaction_index):

@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Sep  4 14:18:30 2023
-
-@author: bjl25
-"""
 #Importing required pyomo and idaes components
 from pyomo.environ import (
     Constraint,
@@ -62,14 +56,7 @@ m.fs.steam_properties = HelmholtzParameterBlock(
         phase_presentation=PhaseType.LG,
     )
 
-
-
-# creating reactor unit
-m.fs.M101 = Mixer(
-    property_package = m.fs.biomass_properties,
-    inlet_list=["biomass_feed"]
-)
-
+#combustion reactor
 m.fs.R101 = StoichiometricReactor(
     property_package = m.fs.biomass_properties,
     reaction_package = m.fs.reaction_params,
@@ -87,26 +74,24 @@ m.fs.E101 = HeatExchanger(
     tube={"property_package": m.fs.steam_properties}
 )
 
-#reactor flow sheet feed via mixer -> reactor -> product via separator
+#reactor flow sheet: feed-> reactor -> hot flue -> HX -> flue
 
-m.fs.s01 = Arc(source=m.fs.M101.outlet,destination=m.fs.R101.inlet)
 m.fs.s02 = Arc(source=m.fs.R101.outlet,destination=m.fs.E101.shell_inlet)
-
 TransformationFactory("network.expand_arcs").apply_to(m)
 
-
+#specifying reactor
 flowTotal = 1
-extentR1 = 0.005*flowTotal #absolute extent of reaction
+extentR1 = 0.01*flowTotal #absolute extent of reaction
 
-m.fs.M101.biomass_feed.mole_frac_comp[0,"N2"].fix(0.7)
-m.fs.M101.biomass_feed.mole_frac_comp[0,"O2"].fix(0.295)
-m.fs.M101.biomass_feed.mole_frac_comp[0,"CO2"].fix(1e-20)
-m.fs.M101.biomass_feed.mole_frac_comp[0,"H2O"].fix(1e-20) 
-m.fs.M101.biomass_feed.mole_frac_comp[0,"CO"].fix(1e-20) 
-m.fs.M101.biomass_feed.mole_frac_comp[0,"biomass"].fix(0.005) 
-m.fs.M101.biomass_feed.temperature.fix(500)
-m.fs.M101.biomass_feed.pressure.fix(101325)
-m.fs.M101.biomass_feed.flow_mol.fix(flowTotal)
+m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.7)
+m.fs.R101.inlet.mole_frac_comp[0,"O2"].fix(0.29)
+m.fs.R101.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
+m.fs.R101.inlet.mole_frac_comp[0,"H2O"].fix(1e-20) 
+m.fs.R101.inlet.mole_frac_comp[0,"CO"].fix(1e-20) 
+m.fs.R101.inlet.mole_frac_comp[0,"biomass"].fix(0.01) 
+m.fs.R101.inlet.temperature.fix(500)
+m.fs.R101.inlet.pressure.fix(101325)
+m.fs.R101.inlet.flow_mol.fix(flowTotal)
 
 # Add variables for extent of each reaction (mol/s)
 m.fs.R101.extent_R1 = Var(m.fs.time, initialize=extentR1, units=pyunits.mol/pyunits.s)
@@ -123,26 +108,29 @@ m.fs.R101.extent_match = Constraint(
     rule=extent_match_rule
 )
 
-m.fs.R101.extent_R1[0.0].fix(extentR1) 
-m.fs.R101.outlet.temperature.unfix()
+m.fs.R101.extent_R1[0.0].fix(extentR1)
 
-print(degrees_of_freedom(m))
-
-m.fs.R101.initialize()
-
-#specifying heat exchanger
-m.fs.E101.area.fix(0.25)
+#initialisation routine:
+#heat exchanger init specs
+m.fs.E101.area.fix(0.5)
 m.fs.E101.overall_heat_transfer_coefficient[0].fix(100)
-m.fs.E101.tube_inlet.flow_mol.fix(0.1)
+m.fs.E101.tube_inlet.flow_mol.fix(0.5)
 m.fs.E101.tube_inlet.pressure.fix(101325)
 m.fs.E101.tube_inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=290*pyunits.K))
+#actual init.
+seq = SequentialDecomposition()
+seq.options.select_tear_method = "heuristic"
 
-initializer = HX0DInitializer()
-initializer.initialize(m.fs.E101)
+def function(unit):
+    unit.initialize(outlvl=idaeslog.INFO)
+    
+seq.run(m, function)
 
-# m.fs.E101.shell_outlet.temperature.fix(600)
-m.fs.E101.area.unfix()
-# m.fs.E101.tube_inlet.flow_mol.unfix()
+#final heat exchanger specifying
+m.fs.E101.shell_outlet.temperature.fix(600)
+# m.fs.E101.area.unfix()
+m.fs.E101.overall_heat_transfer_coefficient[0].unfix()
+m.fs.E101.tube_inlet.flow_mol.unfix()
 m.fs.E101.tube_outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=400*pyunits.K))
 
 print(degrees_of_freedom(m))
@@ -153,7 +141,7 @@ status=solver.solve(m,tee=True)
 print(degrees_of_freedom(m))
 assert degrees_of_freedom(m) == 0
 
-# print(value(m.fs.R101.outlet.temperature[0]))
+#results
 m.fs.E101.report()
 m.fs.R101.report()
 print(value(m.fs.reaction_params.ncv))
