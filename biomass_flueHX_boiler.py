@@ -61,7 +61,7 @@ m.fs.R101 = StoichiometricReactor(
     property_package = m.fs.biomass_properties,
     reaction_package = m.fs.reaction_params,
     has_heat_of_reaction=True,
-    has_heat_transfer=False,
+    has_heat_transfer=True,
     has_pressure_change=False,
 )
 
@@ -92,6 +92,9 @@ m.fs.R101.conversion_constraint = Constraint(
 #specifying reactor
 flowTotal = 1
 m.fs.R101.conversion.fix(1)
+
+heatLoss = 7911 #J/s
+m.fs.R101.heat_duty[0].fix(-heatLoss)
 
 m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.7)
 m.fs.R101.inlet.mole_frac_comp[0,"O2"].fix(0.29)
