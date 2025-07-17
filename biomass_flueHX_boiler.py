@@ -26,7 +26,7 @@ from idaes.core import FlowsheetBlock
 # Import idaes logger to set output levels
 import idaes.logger as idaeslog
 from idaes.models.properties.modular_properties import GenericParameterBlock
-from  single_comp_biomass_comb_pp import configuration 
+from  biomass_comb_pp import configuration 
 from  biomass_combustion_rp import BMCombReactionParameterBlock
 
 #helmholtz import for water
@@ -50,6 +50,7 @@ m.fs.reaction_params = BMCombReactionParameterBlock(
 )
 m.fs.reaction_params.h.fix(0.06)
 m.fs.reaction_params.w.fix(0.09)
+m.fs.reaction_params.ash_content.fix(0.02) #fraction percent of ash content
 
 m.fs.steam_properties = HelmholtzParameterBlock(
         pure_component="h2o", amount_basis=AmountBasis.MOLE,
@@ -93,7 +94,7 @@ m.fs.R101.conversion_constraint = Constraint(
 flowTotal = 1
 m.fs.R101.conversion.fix(1)
 
-heatLoss = 7911 #J/s
+heatLoss = 1000 #J/s
 m.fs.R101.heat_duty[0].fix(-heatLoss)
 
 m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.7)
@@ -102,20 +103,25 @@ m.fs.R101.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
 m.fs.R101.inlet.mole_frac_comp[0,"H2O"].fix(1e-20) 
 m.fs.R101.inlet.mole_frac_comp[0,"CO"].fix(1e-20) 
 m.fs.R101.inlet.mole_frac_comp[0,"biomass"].fix(0.01) 
+m.fs.R101.inlet.mole_frac_comp[0,"ash"].fix(1e-20)
 m.fs.R101.inlet.temperature.fix(500)
 m.fs.R101.inlet.pressure.fix(101325)
 m.fs.R101.inlet.flow_mol.fix(flowTotal)
+
+
 
 #initialisation routine:
 #heat exchanger init specs
 m.fs.E101.area.fix(0.5)
 m.fs.E101.overall_heat_transfer_coefficient[0].fix(100)
-m.fs.E101.tube_inlet.flow_mol.fix(1)
+m.fs.E101.tube_inlet.flow_mol.fix(0.5)
 m.fs.E101.tube_inlet.pressure.fix(101325)
 m.fs.E101.tube_inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=290*pyunits.K))
 #actual init.
 seq = SequentialDecomposition()
 seq.options.select_tear_method = "heuristic"
+
+print(degrees_of_freedom(m))
 
 def function(unit):
     unit.initialize(outlvl=idaeslog.INFO)
@@ -123,7 +129,7 @@ def function(unit):
 seq.run(m, function)
 
 #final heat exchanger specifying
-m.fs.E101.shell_outlet.temperature.fix(600)
+m.fs.E101.shell_outlet.temperature.fix(500)
 # m.fs.E101.area.unfix()
 m.fs.E101.overall_heat_transfer_coefficient[0].unfix()
 # m.fs.E101.tube_inlet.flow_mol.unfix()
