@@ -79,7 +79,7 @@ class BMCombReactionParameterData(ReactionParameterBlock):
         #net calorific value (wet basis) (pg. 7) https://www.mbie.govt.nz/dmsdocument/125-industrial-bioenergy-
         #ncv multiplied by 162 g/mo (cellulose) to convert from /mass to /mol basis.
 
-        dh_rxn_dict = {"R1": -self.ncv} # w=9%, h=6% ncv=-2749556.40
+        dh_rxn_dict = {"R1": -self.ncv} # @ w=9%, h=6% ==> ncv=-2749556.40
         
         def dh_rxn(b,reaction_index):
             # only one reaction index, so we are just setting it to the ncv

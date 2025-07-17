@@ -48,9 +48,11 @@ m.fs.biomass_properties = GenericParameterBlock(**configuration)
 m.fs.reaction_params = BMCombReactionParameterBlock(
     property_package=m.fs.biomass_properties
 )
+
+#specifying rp parameters
 m.fs.reaction_params.h.fix(0.06)
 m.fs.reaction_params.w.fix(0.09)
-m.fs.reaction_params.ash_content.fix(0.02) #fraction percent of ash content
+m.fs.reaction_params.ash_content.fix(0.01) #fraction percent of ash content
 
 m.fs.steam_properties = HelmholtzParameterBlock(
         pure_component="h2o", amount_basis=AmountBasis.MOLE,
@@ -109,7 +111,6 @@ m.fs.R101.inlet.pressure.fix(101325)
 m.fs.R101.inlet.flow_mol.fix(flowTotal)
 
 
-
 #initialisation routine:
 #heat exchanger init specs
 m.fs.E101.area.fix(0.5)
@@ -144,6 +145,11 @@ status=solver.solve(m,tee=True)
 print(degrees_of_freedom(m))
 assert degrees_of_freedom(m) == 0
 
+m.fs.boiler_eff = Expression(
+    expr = m.fs.E101.heat_duty[0]/(m.fs.R101.rate_reaction_extent[0,"R1"]*-m.fs.reaction_params.dh_rxn["R1"])
+)
+
 #results
-m.fs.E101.report()
 m.fs.R101.report()
+m.fs.E101.report()
+print(f"    Boiler Efficiency: {value(m.fs.boiler_eff)*100:.2f}%")
