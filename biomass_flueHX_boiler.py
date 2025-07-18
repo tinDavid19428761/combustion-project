@@ -4,6 +4,7 @@ from pyomo.environ import (
     Var,
     ConcreteModel,
     Expression,
+    Param,
     Objective,
     SolverFactory,
     TransformationFactory,
@@ -38,7 +39,6 @@ from idaes.models.properties.general_helmholtz import (
     )
 from idaes.models.unit_models.heat_exchanger import delta_temperature_amtd_callback, HX0DInitializer
 
-from idaes.core.util.model_statistics import degrees_of_freedom
 
 m = ConcreteModel()
 
@@ -52,7 +52,7 @@ m.fs.reaction_params = BMCombReactionParameterBlock(
 #specifying rp parameters
 m.fs.reaction_params.h.fix(0.06)
 m.fs.reaction_params.w.fix(0.09)
-m.fs.reaction_params.ash_content.fix(0.01) #fraction percent of ash content
+m.fs.reaction_params.rate_reaction_stoichiometry["R1","Sol","ash"]=0.02 #specify ash content
 
 m.fs.steam_properties = HelmholtzParameterBlock(
         pure_component="h2o", amount_basis=AmountBasis.MOLE,
@@ -69,7 +69,7 @@ m.fs.R101 = StoichiometricReactor(
 )
 
 #flue-water heat exchanger
-m.fs.E101 = HeatExchanger(
+m.fs.E101 = HeatExchanger( #consider renaming to B101 for boiler
     delta_temperature_callback=delta_temperature_amtd_callback,
     hot_side_name="shell",
     cold_side_name="tube",
@@ -96,8 +96,19 @@ m.fs.R101.conversion_constraint = Constraint(
 flowTotal = 1
 m.fs.R101.conversion.fix(1)
 
-heatLoss = 1000 #J/s
-m.fs.R101.heat_duty[0].fix(-heatLoss)
+m.fs.R101.ohtc = Param(initialize=250, units=pyunits.J/pyunits.m**2/pyunits.K/pyunits.s, doc="boiler casing overall heat transfer coefficient")
+m.fs.R101.surface_area = Param(initialize=0.01, units=pyunits.m**2, doc="casing outer surface area")
+m.fs.R101.surface_temp = Param(initialize=55+273.15, units=pyunits.K, doc="outer skin temperature of boiler")
+m.fs.R101.casing_heat_loss = Var(initialize=2000, units=pyunits.J/pyunits.s)
+m.fs.R101.casing_heat_loss_constraint = Constraint(
+    expr=m.fs.R101.casing_heat_loss
+    ==m.fs.R101.ohtc*m.fs.R101.surface_area*(m.fs.R101.outlet.temperature[0]-m.fs.R101.surface_temp)
+)
+
+# heatLoss = 0 #J/s
+m.fs.R101.hl_constraint = Constraint(
+    expr=m.fs.R101.heat_duty[0]==m.fs.R101.casing_heat_loss
+)
 
 m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.7)
 m.fs.R101.inlet.mole_frac_comp[0,"O2"].fix(0.29)
@@ -106,7 +117,7 @@ m.fs.R101.inlet.mole_frac_comp[0,"H2O"].fix(1e-20)
 m.fs.R101.inlet.mole_frac_comp[0,"CO"].fix(1e-20) 
 m.fs.R101.inlet.mole_frac_comp[0,"biomass"].fix(0.01) 
 m.fs.R101.inlet.mole_frac_comp[0,"ash"].fix(1e-20)
-m.fs.R101.inlet.temperature.fix(500)
+m.fs.R101.inlet.temperature.fix(400)
 m.fs.R101.inlet.pressure.fix(101325)
 m.fs.R101.inlet.flow_mol.fix(flowTotal)
 
@@ -153,3 +164,5 @@ m.fs.boiler_eff = Expression(
 m.fs.R101.report()
 m.fs.E101.report()
 print(f"    Boiler Efficiency: {value(m.fs.boiler_eff)*100:.2f}%")
+print(value(m.fs.R101.casing_heat_loss))
+print(value(m.fs.R101.outlet.temperature[0]))
