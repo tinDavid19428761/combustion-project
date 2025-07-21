@@ -18,7 +18,8 @@ from idaes.models.unit_models import (
 Mixer,
 StoichiometricReactor,
 Heater,
-HeatExchanger
+HeatExchanger,
+Separator
 )
 
 from idaes.models.unit_models.pressure_changer import ThermodynamicAssumption
@@ -38,6 +39,7 @@ from idaes.models.properties.general_helmholtz import (
         PhaseType,
     )
 from idaes.models.unit_models.heat_exchanger import delta_temperature_amtd_callback, HX0DInitializer
+from idaes.models.unit_models.separator import SplittingType
 
 
 m = ConcreteModel()
@@ -77,9 +79,23 @@ m.fs.E101 = HeatExchanger( #consider renaming to B101 for boiler
     tube={"property_package": m.fs.steam_properties}
 )
 
+#ash separation
+m.fs.S101 = Separator(
+    property_package = m.fs.biomass_properties,
+    split_basis = SplittingType.phaseFlow,
+    outlet_list = ["flue", "ash"]
+)
+
 #reactor flow sheet: feed-> reactor -> hot flue -> HX -> flue
-m.fs.s02 = Arc(source=m.fs.R101.outlet,destination=m.fs.E101.shell_inlet)
+m.fs.s01 = Arc(source=m.fs.R101.outlet,destination=m.fs.S101.inlet)
+m.fs.s02 = Arc(source=m.fs.S101.flue,destination=m.fs.E101.shell_inlet)
 TransformationFactory("network.expand_arcs").apply_to(m)
+
+#specifying ash separation
+m.fs.S101.split_fraction[0,"ash","Sol"].fix(1)
+m.fs.S101.split_fraction[0,"ash","Vap"].fix(0)
+
+#specifying reactor
 
 #defining reactor conversion variable
 m.fs.R101.conversion = Var(initialize=1, bounds=(0,1))
@@ -92,22 +108,20 @@ m.fs.R101.conversion_constraint = Constraint(
     )
 )
 
-#specifying reactor
-flowTotal = 1
 m.fs.R101.conversion.fix(1)
 
+#modelling Q_loss_casing_convection
 m.fs.R101.ohtc = Param(initialize=250, units=pyunits.J/pyunits.m**2/pyunits.K/pyunits.s, doc="boiler casing overall heat transfer coefficient")
 m.fs.R101.surface_area = Param(initialize=0.01, units=pyunits.m**2, doc="casing outer surface area")
 m.fs.R101.surface_temp = Param(initialize=55+273.15, units=pyunits.K, doc="outer skin temperature of boiler")
-m.fs.R101.casing_heat_loss = Var(initialize=2000, units=pyunits.J/pyunits.s)
-m.fs.R101.casing_heat_loss_constraint = Constraint(
-    expr=m.fs.R101.casing_heat_loss
-    ==m.fs.R101.ohtc*m.fs.R101.surface_area*(m.fs.R101.outlet.temperature[0]-m.fs.R101.surface_temp)
-)
 
-# heatLoss = 0 #J/s
-m.fs.R101.hl_constraint = Constraint(
-    expr=m.fs.R101.heat_duty[0]==m.fs.R101.casing_heat_loss
+#BlowDownRatio
+m.fs.R101.bdr = Param(initialize=0.04, doc="The blow down ratio = mass_flow_blowdown / mass_flow_steam")
+
+m.fs.R101.heat_loss_constraint = Constraint(
+    expr=-m.fs.R101.heat_duty[0]==
+    (m.fs.R101.ohtc*m.fs.R101.surface_area*(m.fs.R101.outlet.temperature[0]-m.fs.R101.surface_temp))
+    
 )
 
 m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.7)
@@ -119,14 +133,14 @@ m.fs.R101.inlet.mole_frac_comp[0,"biomass"].fix(0.01)
 m.fs.R101.inlet.mole_frac_comp[0,"ash"].fix(1e-20)
 m.fs.R101.inlet.temperature.fix(400)
 m.fs.R101.inlet.pressure.fix(101325)
-m.fs.R101.inlet.flow_mol.fix(flowTotal)
+m.fs.R101.inlet.flow_mol.fix(2)
 
 
 #initialisation routine:
 #heat exchanger init specs
 m.fs.E101.area.fix(0.5)
 m.fs.E101.overall_heat_transfer_coefficient[0].fix(100)
-m.fs.E101.tube_inlet.flow_mol.fix(0.5)
+m.fs.E101.tube_inlet.flow_mol.fix(1)
 m.fs.E101.tube_inlet.pressure.fix(101325)
 m.fs.E101.tube_inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=290*pyunits.K))
 #actual init.
@@ -164,5 +178,13 @@ m.fs.boiler_eff = Expression(
 m.fs.R101.report()
 m.fs.E101.report()
 print(f"    Boiler Efficiency: {value(m.fs.boiler_eff)*100:.2f}%")
-print(value(m.fs.R101.casing_heat_loss))
-print(value(m.fs.R101.outlet.temperature[0]))
+print(f"    heat loss:{value(m.fs.R101.heat_duty[0]):.2f}J/s")
+print(f"    combustion temperature: {value(m.fs.R101.outlet.temperature[0]):.2f}K")
+print(f"    cp_out: {value(m.fs.R101.control_volume.properties_out[0].cp_mol):.2f}J/K/mol")
+print(f"    cp_in: {value(m.fs.R101.control_volume.properties_in[0].cp_mol):.2f}J/K/mol")
+print(f"    h_out: {value(m.fs.R101.control_volume.properties_out[0].enth_mol):.2f}J/mol")
+print(f"    h_in: {value(m.fs.R101.control_volume.properties_in[0].enth_mol):.2f}J/mol")
+print(value(m.fs.R101.heat_duty[0]))
+
+
+

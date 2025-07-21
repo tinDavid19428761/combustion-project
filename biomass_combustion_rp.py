@@ -57,8 +57,6 @@ class BMCombReactionParameterData(ReactionParameterBlock):
         # Reaction Index
         self.rate_reaction_idx = Set(initialize=["R1"])
 
-        self.ash_content = Var(initialize=0.01, doc="fraction of ash content in fuel. Assumes stoichiometry of fuel in reaction is -1 (see self.rate_reaction_stoichiometry)") 
-
         # Reaction Stoichiometry
         self.rate_reaction_stoichiometry = {("R1", "Vap", "H2O"): 5,
                                             ("R1", "Vap", "CO2"): 6,
@@ -66,7 +64,7 @@ class BMCombReactionParameterData(ReactionParameterBlock):
                                             ("R1", "Sol", "biomass"): -1,
                                             ("R1", "Vap", "N2"): 0,
                                             ("R1", "Vap", "CO"): 0,
-                                            ("R1", "Sol", "ash"): self.ash_content
+                                            ("R1", "Sol", "ash"): 0.01#self.ash_content
                                             }
 
         

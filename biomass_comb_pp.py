@@ -51,6 +51,8 @@ configuration = {
             "type": Component,
             "elemental_composition": {"C":6, "H": 10, "O": 5}, #[] cellulose composition  C6,H10,O5
             "enth_mol_sol_comp": ConstantProperties.Constant,
+            "cp_mol_sol_comp": ConstantProperties.Constant,
+
             "dens_mol_sol_comp": ConstantProperties.Constant,
             'valid_phase_types': PT.solidPhase,
             "parameter_data": {
@@ -65,6 +67,7 @@ configuration = {
         "ash": {
             "type": Component,
             "elemental_composition": {"Random":1}, #mainly SiO2, Al2O3, CaO, Fe2O3, MgO
+            "cp_mol_sol_comp": ConstantProperties.Constant,
             "enth_mol_sol_comp": ConstantProperties.Constant,
             "dens_mol_sol_comp": ConstantProperties.Constant,
             'valid_phase_types': PT.solidPhase,
@@ -81,6 +84,7 @@ configuration = {
             "type": Component,
             "elemental_composition": {"O":2},
             "enth_mol_ig_comp": NIST,
+            "cp_mol_ig_comp": NIST,
             'valid_phase_types': PT.vaporPhase,
             "parameter_data": {
                 "mw": (31.9988, pyunits.g / pyunits.mol),  # [4]
@@ -113,6 +117,7 @@ configuration = {
             "type": Component,
             "elemental_composition": {"O":2, "C":1},
             "enth_mol_ig_comp": NIST,
+            "cp_mol_ig_comp": NIST,
             'valid_phase_types': PT.vaporPhase,
             "parameter_data": {
                 "mw": (44.0095, pyunits.g / pyunits.mol),  # [4]
@@ -136,6 +141,7 @@ configuration = {
             "type": Component,
             "elemental_composition": {"O":1, "C":1},
             "enth_mol_ig_comp": NIST,
+            "cp_mol_ig_comp": NIST,
             'valid_phase_types': PT.vaporPhase,
             "parameter_data": {
                 "mw": (28.0101, pyunits.g / pyunits.mol),  # [4]
@@ -159,6 +165,7 @@ configuration = {
            "type": Component,
            "elemental_composition":{"H":2,"O":1},
            "enth_mol_ig_comp": NIST,
+           "cp_mol_ig_comp": NIST,
            "pressure_sat_comp": NIST,
            'valid_phase_types': PT.vaporPhase,
            "parameter_data": {
@@ -188,6 +195,7 @@ configuration = {
             "type": Component,
             "elemental_composition": {"N":2},
             "enth_mol_ig_comp": NIST,
+            "cp_mol_ig_comp": NIST,
             'valid_phase_types': PT.vaporPhase,
             "parameter_data": {
                 "mw": (28.0134, pyunits.g / pyunits.mol),  # [4]
