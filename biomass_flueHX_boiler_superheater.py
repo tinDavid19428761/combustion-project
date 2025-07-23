@@ -1,3 +1,25 @@
+""" 
+Combustion Boiler Model with steam superheater. 
+Modelled by adiabatic combustion reactor sending hot flue to boiler HX and superheater HX in counter-current to boiler water stream.
+
+                                                            BlowDownWater
+                                                                  ^
+                                                                  |
+                                                 +--------[Phase Separation]
+                                                 |                |
+                                                 |           BoilerWater
+                                                 |                ^
+                                                 |                |
+Fuel+Air --->[Reactor]<|---> Hot Flue ---> [Superheater] ---> [Boiler] ---> Stack Flue
+                       |                         |                ^
+                       |                         \/               |
+                       \/                    Superheated    BoilerFeedWater
+                       Ash                      Steam             
+                            
+"""
+
+__author__ = "David Dickson"
+
 #Importing required pyomo and idaes components
 from pyomo.environ import (
     Constraint,
@@ -62,7 +84,6 @@ m.fs.steam_properties = HelmholtzParameterBlock(
         # state_vars=StateVars.TPX
     )
 
-#combustion reactor
 m.fs.fire_side = StoichiometricReactor(
     property_package = m.fs.biomass_properties,
     reaction_package = m.fs.reaction_params,
@@ -71,7 +92,6 @@ m.fs.fire_side = StoichiometricReactor(
     has_pressure_change=False,
 )
 
-#flue-water heat exchanger
 m.fs.superheater = HeatExchanger(
     delta_temperature_callback=delta_temperature_amtd_callback,
     hot_side_name="shell",
@@ -151,12 +171,6 @@ m.fs.ash_sep.split_fraction[0,"ash","Vap"].fix(0)
 m.fs.boiler_hx.tube_inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=350*pyunits.K))
 m.fs.boiler_hx.tube_outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,x=0.95)) # quality[x] = 1 - BlowDownRatio
 m.fs.superheater.tube_outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=400*pyunits.K))
-# m.fs.boiler_hx.tube_inlet.temperature.fix(350)
-# m.fs.boiler_hx.tube_inlet.vapor_frac.fix(0)
-# # m.fs.boiler_hx.tube_outlet.temperature.fix()
-# m.fs.boiler_hx.tube_outlet.vapor_frac.fix(0.95)
-# m.fs.superheater.tube_outlet.temperature.fix(400)
-# # m.fs.superheater.tube_outlet.vapor_frac.fix(1)
 m.fs.superheater.overall_heat_transfer_coefficient[0].fix(100)
 m.fs.boiler_hx.tube_inlet.flow_mol.fix(20)
 m.fs.boiler_hx.tube_inlet.pressure.fix(101325)
@@ -173,7 +187,7 @@ G = seq.create_graph(m)
 heuristic_tear_set = seq.tear_set_arcs(G, method="heuristic")
 order = seq.calculation_order(G)
 
-#for identifying tear stream
+#for identifying tear stream:
 """ for o in heuristic_tear_set: #fs.s03
     print(o.name) """ 
 
