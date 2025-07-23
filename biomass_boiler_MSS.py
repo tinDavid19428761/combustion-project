@@ -241,7 +241,7 @@ for i in steady_states:
         expr = 100*(m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/(m.fs.fire_side.rate_reaction_extent[0,"R1"]*-m.fs.reaction_params.dh_rxn["R1"])
     )
     effs[i-steady_states[0]] = value(m.fs.boiler_eff)
-""" Loop Close """
+
 print(effs)
 print("Load  Eff")
 for i in range(len(steady_states)):
