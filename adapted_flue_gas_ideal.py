@@ -582,8 +582,16 @@ class FlueGasStateBlockData(StateBlockData):
         super(FlueGasStateBlockData, self).build()
         comps = self.params.component_list
         # Add state variables
-        self.flow_mol_comp = Var(
+        self.mole_frac_comp = Var(
             comps,
+            domain=Reals,
+            initialize=1.0,
+            bounds=(0, 1e6),
+            doc="Component molar flowrate [mol/s]",
+            # units=pyunits.mol / pyunits.s,
+        )
+        self.flow_mol = Var(
+            # comps,
             domain=Reals,
             initialize=1.0,
             bounds=(0, 1e6),
@@ -604,8 +612,9 @@ class FlueGasStateBlockData(StateBlockData):
             doc="State temperature [K]",
             units=pyunits.K,
         )
-
+        #need expression and/or rule for flow_mol_comp
         # Add expressions for some basic oft-used quantiies
+        """ 
         self.flow_mol = Expression(expr=sum(self.flow_mol_comp[j] for j in comps))
 
         def rule_mole_frac(b, c):
@@ -613,6 +622,13 @@ class FlueGasStateBlockData(StateBlockData):
 
         self.mole_frac_comp = Expression(
             comps, rule=rule_mole_frac, doc="mole fraction of component i"
+        ) """
+
+        def rule_flow_mol_comp(b,c):
+            return b.mole_frac_comp[c] * b.flow_mol
+        
+        self.flow_mol_comp = Expression(
+            comps, rule=rule_flow_mol_comp, doc="mole flow of component i"
         )
 
         self.flow_mass = Expression(
@@ -959,8 +975,9 @@ class FlueGasStateBlockData(StateBlockData):
 
     def define_state_vars(self):
         return {
-            "flow_mol_comp": self.flow_mol_comp,    
-            "mole_frac_phase_comp": self.        
+            # "flow_mol_comp": self.flow_mol_comp,    
+            "mole_frac_comp": self.mole_frac_comp,
+            "flow_mol"    : self.flow_mol,    
             "temperature": self.temperature,
             "pressure": self.pressure,
         }

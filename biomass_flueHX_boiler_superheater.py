@@ -45,6 +45,11 @@ Separator,
 Flash
 )
 from idaes.models_extra.power_generation.unit_models.helm.phase_separator import HelmPhaseSeparator
+from idaes.models_extra.power_generation.unit_models.boiler_heat_exchanger import (
+    BoilerHeatExchanger,
+    TubeArrangement,
+    HeatExchangerFlowPattern,
+)
 
 from idaes.models.unit_models.pressure_changer import ThermodynamicAssumption
 from idaes.core.util.model_statistics import degrees_of_freedom
@@ -142,21 +147,21 @@ m.fs.reaction_params.rate_reaction_stoichiometry["R1","Sol","ash"]=0.02 #specify
 
 #reaction conversion constraint
 m.fs.fire_side.conversion = Var(initialize=1, bounds=(0,1))
-# m.fs.fire_side.conversion_constraint = Constraint(
-#     expr=m.fs.fire_side.conversion*m.fs.fire_side.inlet.flow_mol_comp[0,"biomass"]*m.fs.fire_side.inlet.feed_flow_mol[0]
-#     == (
-#         m.fs.fire_side.inlet.feed_flow_mol[0]*m.fs.fire_side.inlet.flow_mol_comp[0,"biomass"]
-#         -m.fs.fire_side.outlet.feed_flow_mol[0]*m.fs.fire_side.outlet.flow_mol_comp[0,"biomass"]
-#     )
-# )
-
 m.fs.fire_side.conversion_constraint = Constraint(
-    expr=m.fs.fire_side.conversion*m.fs.fire_side.inlet.flow_mol_comp[0,"biomass"]
+    expr=m.fs.fire_side.conversion*m.fs.fire_side.inlet.mole_frac_comp[0,"biomass"]*m.fs.fire_side.inlet.flow_mol[0]
     == (
-        m.fs.fire_side.inlet.flow_mol_comp[0,"biomass"]
-        -m.fs.fire_side.outlet.flow_mol_comp[0,"biomass"]
+        m.fs.fire_side.inlet.flow_mol[0]*m.fs.fire_side.inlet.mole_frac_comp[0,"biomass"]
+        -m.fs.fire_side.outlet.flow_mol[0]*m.fs.fire_side.outlet.mole_frac_comp[0,"biomass"]
     )
 )
+
+# m.fs.fire_side.conversion_constraint = Constraint(
+#     expr=m.fs.fire_side.conversion*m.fs.fire_side.inlet.flow_mol_comp[0,"biomass"]
+#     == (
+#         m.fs.fire_side.inlet.flow_mol_comp[0,"biomass"]
+#         -m.fs.fire_side.outlet.flow_mol_comp[0,"biomass"]
+#     )
+# )
 m.fs.fire_side.conversion.fix(1)
 
 #modelling Q_loss_casing_convection
@@ -216,7 +221,7 @@ tear_guesses = {
         (0, "O2"): 0.22,
         (0, "CO2"): 0.06,
         (0, "H2O"): 0.05,
-        (0, "CO"): 1e-20,
+        # (0, "CO"): 1e-20,
         (0, "biomass"): 1e-20,
         (0, "ash"): 1e-20,
     },
