@@ -1,3 +1,4 @@
+#current state: "visc_d is not supported by property package"
 """ 
 Combustion Boiler Model with steam superheater. 
 Modelled by adiabatic combustion reactor sending hot flue to boiler HX and superheater HX in counter-current to boiler water stream.
@@ -10,7 +11,7 @@ Modelled by adiabatic combustion reactor sending hot flue to boiler HX and super
                                                  |           BoilerWater
                                                  |                ^
                                                  |                |
-Fuel+Air --->[Reactor]<|---> Hot Flue ---> [Superheater] ---> [Boiler] ---> Stack Flue
+Fuel+Air --->[Reactor]<|---> Hot Flue ---> [Superheater] ---> [Boiler (1D-HX)] ---> Stack Flue
                        |                         |                ^
                        |                         \/               |
                        \/                    Superheated    BoilerFeedWater
@@ -45,7 +46,7 @@ Separator,
 Flash
 )
 from idaes.models_extra.power_generation.unit_models.helm.phase_separator import HelmPhaseSeparator
-
+from idaes.models_extra.power_generation.unit_models.boiler_heat_exchanger import BoilerHeatExchanger, TubeArrangement, HeatExchangerFlowPattern
 from idaes.models.unit_models.pressure_changer import ThermodynamicAssumption
 from idaes.core.util.model_statistics import degrees_of_freedom
 from idaes.core import FlowsheetBlock
@@ -69,14 +70,11 @@ from idaes.core.util.model_diagnostics import (
     DiagnosticsToolbox,
 )
 
-from adapted_flue_gas_ideal import FlueGasParameterBlock
-
 m = ConcreteModel()
 
 m.fs = FlowsheetBlock(dynamic=False)
 
-# m.fs.biomass_properties = GenericParameterBlock(**configuration)
-m.fs.biomass_properties = FlueGasParameterBlock(components=["N2", "O2", "CO2", "H2O","ash", "biomass"])
+m.fs.biomass_properties = GenericParameterBlock(**configuration)
 m.fs.reaction_params = BMCombReactionParameterBlock(
     property_package=m.fs.biomass_properties
 )
@@ -103,24 +101,24 @@ m.fs.superheater = HeatExchanger(
     tube={"property_package": m.fs.steam_properties}
 )
 
-m.fs.boiler_hx = HeatExchanger(
+m.fs.boiler_hx = BoilerHeatExchanger(
+    has_holdup = False,
+    flow_pattern=HeatExchangerFlowPattern.countercurrent,
+    tube_arrangement=TubeArrangement.inLine,
+
     delta_temperature_callback=delta_temperature_amtd_callback,
     hot_side_name="shell",
     cold_side_name="tube",
+    # tube_water_phase="Liq",
+    has_radiation=False,
     shell={"property_package": m.fs.biomass_properties},
     tube={"property_package": m.fs.steam_properties}
 )
 
-# m.fs.ash_sep = Separator(
-#     property_package = m.fs.biomass_properties,
-#     split_basis = SplittingType.phaseFlow,
-#     outlet_list = ["flue", "ash_out"]
-# )
-
 m.fs.ash_sep = Separator(
     property_package = m.fs.biomass_properties,
-    split_basis = SplittingType.componentFlow,
-    outlet_list = ["flue", "ash_out"]
+    split_basis = SplittingType.phaseFlow,
+    outlet_list = ["flue", "ash"]
 )
 
 m.fs.bdw_sep = HelmPhaseSeparator(
@@ -142,19 +140,11 @@ m.fs.reaction_params.rate_reaction_stoichiometry["R1","Sol","ash"]=0.02 #specify
 
 #reaction conversion constraint
 m.fs.fire_side.conversion = Var(initialize=1, bounds=(0,1))
-# m.fs.fire_side.conversion_constraint = Constraint(
-#     expr=m.fs.fire_side.conversion*m.fs.fire_side.inlet.flow_mol_comp[0,"biomass"]*m.fs.fire_side.inlet.feed_flow_mol[0]
-#     == (
-#         m.fs.fire_side.inlet.feed_flow_mol[0]*m.fs.fire_side.inlet.flow_mol_comp[0,"biomass"]
-#         -m.fs.fire_side.outlet.feed_flow_mol[0]*m.fs.fire_side.outlet.flow_mol_comp[0,"biomass"]
-#     )
-# )
-
 m.fs.fire_side.conversion_constraint = Constraint(
-    expr=m.fs.fire_side.conversion*m.fs.fire_side.inlet.flow_mol_comp[0,"biomass"]
+    expr=m.fs.fire_side.conversion*m.fs.fire_side.inlet.mole_frac_comp[0,"biomass"]*m.fs.fire_side.inlet.flow_mol[0]
     == (
-        m.fs.fire_side.inlet.flow_mol_comp[0,"biomass"]
-        -m.fs.fire_side.outlet.flow_mol_comp[0,"biomass"]
+        m.fs.fire_side.inlet.flow_mol[0]*m.fs.fire_side.inlet.mole_frac_comp[0,"biomass"]
+        -m.fs.fire_side.outlet.flow_mol[0]*m.fs.fire_side.outlet.mole_frac_comp[0,"biomass"]
     )
 )
 m.fs.fire_side.conversion.fix(1)
@@ -168,14 +158,13 @@ m.fs.fire_side.heat_loss_constraint = Constraint(
     expr=-m.fs.fire_side.heat_duty[0]==
     (m.fs.fire_side.ohtc*m.fs.fire_side.surface_area*(m.fs.fire_side.outlet.temperature[0]-m.fs.fire_side.surface_temp))
 )
-# mole_frac_comp
 
 #reactor feed stream
 m.fs.fire_side.inlet.mole_frac_comp[0,"N2"].fix(0.7)
 m.fs.fire_side.inlet.mole_frac_comp[0,"O2"].fix(0.29)
 m.fs.fire_side.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
 m.fs.fire_side.inlet.mole_frac_comp[0,"H2O"].fix(1e-20) 
-# m.fs.fire_side.inlet.mole_frac_comp[0,"CO"].fix(1e-20) 
+m.fs.fire_side.inlet.mole_frac_comp[0,"CO"].fix(1e-20) 
 m.fs.fire_side.inlet.mole_frac_comp[0,"biomass"].fix(0.01) 
 m.fs.fire_side.inlet.mole_frac_comp[0,"ash"].fix(1e-20)
 m.fs.fire_side.inlet.temperature.fix(400)
@@ -183,10 +172,26 @@ m.fs.fire_side.inlet.pressure.fix(101325)
 m.fs.fire_side.inlet.flow_mol.fix(40)
 
 #specifying ash separation
-m.fs.ash_sep.split_fraction[0,"ash_out","ash"].fix(1)
-m.fs.ash_sep.split_fraction[0,"ash_out","biomass"].fix(1)
-# m.fs.ash_sep.split_fraction[0,"ash","Vap"].fix(0)
- 
+m.fs.ash_sep.split_fraction[0,"ash","Sol"].fix(1)
+m.fs.ash_sep.split_fraction[0,"ash","Vap"].fix(0)
+
+
+#Heat Exchanger Design Parameters [made-up semi-sensible values]
+m.fs.boiler_hx.tube_di.fix(0.02) #2cm
+m.fs.boiler_hx.tube_thickness.fix(0.0005) #0.5mm
+m.fs.boiler_hx.pitch_x.fix(0.04)
+m.fs.boiler_hx.pitch_y.fix(0.04)
+m.fs.boiler_hx.tube_length.fix(2)
+# m.fs.boiler_hx.tube_length.unfix()
+m.fs.boiler_hx.tube_nrow.fix(10)
+m.fs.boiler_hx.tube_ncol.fix(8)
+m.fs.boiler_hx.nrow_inlet.fix(20)
+m.fs.boiler_hx.tube_rfouling = 0.0001
+m.fs.boiler_hx.shell_rfouling = 0.0001
+m.fs.boiler_hx.fcorrection_htc.fix(1)
+m.fs.boiler_hx.elevation.fix(2)
+
+
 m.fs.boiler_hx.tube_inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=350*pyunits.K))
 m.fs.boiler_hx.tube_outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,x=0.95)) # quality[x] = 1 - BlowDownRatio
 m.fs.superheater.tube_outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=400*pyunits.K))

@@ -10,7 +10,7 @@ import idaes.logger as idaeslog
 
 from idaes.models.properties.modular_properties.state_definitions import FTPx
 from idaes.models.properties.modular_properties.eos.ideal import Ideal
-from idaes.models.properties.modular_properties.pure import ConstantProperties
+from idaes.models.properties.modular_properties.pure import ConstantProperties, ChapmanEnskog
 from idaes.models.properties.modular_properties.phase_equil import SmoothVLE
 from idaes.models.properties.modular_properties.phase_equil.bubble_dew import (
     IdealBubbleDew,
@@ -52,16 +52,18 @@ configuration = {
             "elemental_composition": {"C":6, "H": 10, "O": 5}, #[] cellulose composition  C6,H10,O5
             "enth_mol_sol_comp": ConstantProperties.Constant,
             "cp_mol_sol_comp": ConstantProperties.Constant,
-
             "dens_mol_sol_comp": ConstantProperties.Constant,
+            "visc_d_phase_comp": {"Sol": ConstantProperties.Constant},
             'valid_phase_types': PT.solidPhase,
             "parameter_data": {
                 "mw": (162.1394, pyunits.g / pyunits.mol),
                 "cp_mol_sol_comp_coeff": (243.2091, pyunits.J/pyunits.mol/pyunits.K),
                 "dens_mol_sol_comp_coeff": (2960.415544, pyunits.mol/pyunits.m**3), 
                 "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),
-                "enrt_mol_form_sol_comp_ref": (158.1, pyunits.J/pyunits.mol/pyunits.K)
-            },      
+                "enrt_mol_form_sol_comp_ref": (158.1, pyunits.J/pyunits.mol/pyunits.K),
+                "visc_d_Sol_comp_coeff": (3.2833e-05, pyunits.Pa*pyunits.s)  
+            }, 
+             
         },
 
         "ash": {
@@ -70,14 +72,17 @@ configuration = {
             "cp_mol_sol_comp": ConstantProperties.Constant,
             "enth_mol_sol_comp": ConstantProperties.Constant,
             "dens_mol_sol_comp": ConstantProperties.Constant,
+            "visc_d_phase_comp": {"Sol": ConstantProperties.Constant},
             'valid_phase_types': PT.solidPhase,
             "parameter_data": {
                 "mw": (66.37, pyunits.g / pyunits.mol),
                 "cp_mol_sol_comp_coeff": (68.27, pyunits.J/pyunits.mol/pyunits.K), #Cp weighted average by composition of constituents
                 "dens_mol_sol_comp_coeff": (2960.415544, pyunits.mol/pyunits.m**3), #ignore
                 "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),          #ignore
-                "enrt_mol_form_sol_comp_ref": (158.1, pyunits.J/pyunits.mol/pyunits.K) #ignoer
+                "enrt_mol_form_sol_comp_ref": (158.1, pyunits.J/pyunits.mol/pyunits.K), #ignoer
+                "visc_d_Sol_comp_coeff": (3.2833e-05, pyunits.Pa*pyunits.s)  
             },   
+
         },
 
         "O2": {
@@ -85,6 +90,7 @@ configuration = {
             "elemental_composition": {"O":2},
             "enth_mol_ig_comp": NIST,
             "cp_mol_ig_comp": NIST,
+            "visc_d_phase_comp": {"Vap": ConstantProperties.Constant},
             'valid_phase_types': PT.vaporPhase,
             "parameter_data": {
                 "mw": (31.9988, pyunits.g / pyunits.mol),  # [4]
@@ -108,8 +114,8 @@ configuration = {
                     "G": (236.1663, pyunits.J / pyunits.mol /pyunits.K),
                     "H": (0, pyunits.kJ / pyunits.mol)
                 },
-                
                 "enth_mol_form_vap_comp_ref": (0, pyunits.kJ / pyunits.mol),  # [4]
+                "visc_d_Vap_comp_coeff": (3.8642e-05	, pyunits.Pa*pyunits.s)
 
             },
         },
@@ -118,6 +124,7 @@ configuration = {
             "elemental_composition": {"O":2, "C":1},
             "enth_mol_ig_comp": NIST,
             "cp_mol_ig_comp": NIST,
+            "visc_d_phase_comp": {"Vap": ConstantProperties.Constant},
             'valid_phase_types': PT.vaporPhase,
             "parameter_data": {
                 "mw": (44.0095, pyunits.g / pyunits.mol),  # [4]
@@ -134,6 +141,7 @@ configuration = {
                     "H": (-393.5224, pyunits.kJ / pyunits.mol),
                 },
                 "enth_mol_form_vap_comp_ref": (0, pyunits.kJ / pyunits.mol),  # [4]
+                "visc_d_Vap_comp_coeff": (3.2115e-05	, pyunits.Pa*pyunits.s)
 
             },
         },
@@ -142,6 +150,7 @@ configuration = {
             "elemental_composition": {"O":1, "C":1},
             "enth_mol_ig_comp": NIST,
             "cp_mol_ig_comp": NIST,
+            "visc_d_phase_comp": {"Vap": ConstantProperties.Constant},
             'valid_phase_types': PT.vaporPhase,
             "parameter_data": {
                 "mw": (28.0101, pyunits.g / pyunits.mol),  # [4]
@@ -158,6 +167,7 @@ configuration = {
                     "H": (-110.5271, pyunits.kJ / pyunits.mol),
                 },
                 "enth_mol_form_vap_comp_ref": (0, pyunits.kJ / pyunits.mol),  # [4]
+                "visc_d_Vap_comp_coeff": (2.5942e-05	, pyunits.Pa*pyunits.s)
 
             },
         },
@@ -167,6 +177,7 @@ configuration = {
            "enth_mol_ig_comp": NIST,
            "cp_mol_ig_comp": NIST,
            "pressure_sat_comp": NIST,
+           "visc_d_phase_comp": {"Vap": ConstantProperties.Constant},
            'valid_phase_types': PT.vaporPhase,
            "parameter_data": {
                "mw": (18.0153e-3, pyunits.kg / pyunits.mol),  # [4]
@@ -189,6 +200,7 @@ configuration = {
                    "B": (1435.264, pyunits.K),
                    "C": (-64.848, pyunits.K),
                },
+               "visc_d_Vap_comp_coeff": (2.8564e-05	, pyunits.Pa*pyunits.s)
            },
        },
         "N2": {
@@ -196,6 +208,7 @@ configuration = {
             "elemental_composition": {"N":2},
             "enth_mol_ig_comp": NIST,
             "cp_mol_ig_comp": NIST,
+            "visc_d_phase_comp": {"Vap": ConstantProperties.Constant},
             'valid_phase_types': PT.vaporPhase,
             "parameter_data": {
                 "mw": (28.0134, pyunits.g / pyunits.mol),  # [4]
@@ -212,6 +225,7 @@ configuration = {
                     "H": (0, pyunits.kJ / pyunits.mol)
                 },
                 "enth_mol_form_vap_comp_ref": (0, pyunits.kJ / pyunits.mol),  # [4]
+                "visc_d_Vap_comp_coeff": (3.2833e-05, pyunits.Pa*pyunits.s)
             },
         },
     },

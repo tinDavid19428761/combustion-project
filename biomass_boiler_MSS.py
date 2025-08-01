@@ -256,7 +256,7 @@ plt.show()
 m.fs.fire_side.report()
 m.fs.superheater.report()
 m.fs.boiler_hx.report()
-print(f"    Boiler Efficiency: {value(m.fs.boiler_eff)*100:.2f}%")
+print(f"    Boiler Efficiency: {value(m.fs.boiler_eff):.2f}%")
 print(f"    casing heat loss:{value(m.fs.fire_side.heat_duty[0]):.2f}J/s")
 
 
