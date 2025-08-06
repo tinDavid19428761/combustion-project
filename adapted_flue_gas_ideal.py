@@ -94,7 +94,8 @@ class FlueGasParameterData(PhysicalParameterBlock):
         """Add contents to the block."""
         super().build()
         self._state_block_class = FlueGasStateBlock
-        _valid_comps = ["N2", "O2", "NO", "CO2", "H2O", "SO2","ash","biomass"]
+        # _valid_comps = ["N2", "O2", "NO", "CO2", "H2O", "SO2","ash","biomass"]
+        _valid_comps = ["N2", "O2","CO2", "H2O","ash","biomass"]
 
         for j in self.config.components:
             if j not in _valid_comps:
@@ -154,8 +155,10 @@ class FlueGasParameterData(PhysicalParameterBlock):
                     "CO2": 73.8e5,
                     "H2O": 220.64e5,
                     "SO2": 7.883e6,
-                    "ash": 1e-20, #null
-                    "biomass": 1e-20
+                    # "ash": 1e-20, #null
+                    # "biomass": 1e-20
+                    "ash": 33.943, #nominal
+                    "biomass": 33.943
                 }.items()
                 if k in self.component_list
             },
@@ -175,8 +178,10 @@ class FlueGasParameterData(PhysicalParameterBlock):
                     "CO2": 304.18,
                     "H2O": 647,
                     "SO2": 430.8,
-                    "ash": 1e-20, #null
-                    "biomass": 1e-20
+                    # "ash": 1e-20, #null
+                    # "biomass": 1e-20
+                    "ash": 180, #nominal
+                    "biomass": 180
                 }.items()
                 if k in self.component_list
             },
@@ -418,8 +423,8 @@ class FlueGasParameterData(PhysicalParameterBlock):
         # mole_frac_comp
         self.set_default_scaling("pressure", 1e-5)
         self.set_default_scaling("temperature", 1e-1)
-        # self.set_default_scaling("pressure_red", 1e-3)
-        # self.set_default_scaling("temperature_red", 1)
+        self.set_default_scaling("pressure_red", 1e-3)
+        self.set_default_scaling("temperature_red", 1)
         self.set_default_scaling("enth_mol_phase", 1e-3)
         self.set_default_scaling("enth_mol", 1e-3)
         self.set_default_scaling("entr_mol", 1e-2)
@@ -445,8 +450,8 @@ class FlueGasParameterData(PhysicalParameterBlock):
                 "temperature": {"method": None, "units": "K"},
                 "pressure_crit": {"method": None, "units": "Pa"},
                 "temperature_crit": {"method": None, "units": "K"},
-                # "pressure_red": {"method": None, "units": None},
-                # "temperature_red": {"method": None, "units": None},
+                "pressure_red": {"method": None, "units": None},
+                "temperature_red": {"method": None, "units": None},
                 "enth_mol_phase": {"method": "_enthalpy_calc", "units": "J/mol"},
                 "entr_mol_phase": {"method": "_entropy_calc", "units": "J/mol/K"},
                 "enth_mol": {"method": "_enthalpy_calc", "units": "J/mol"},
@@ -586,16 +591,16 @@ class FlueGasStateBlockData(StateBlockData):
             comps,
             domain=Reals,
             initialize=1.0,
-            bounds=(0, 1e6),
-            doc="Component molar flowrate [mol/s]",
+            bounds=(0, 1),
+            doc="Component molar fraction",
             # units=pyunits.mol / pyunits.s,
         )
         self.flow_mol = Var(
             # comps,
             domain=Reals,
-            initialize=1.0,
+            initialize=40.0,
             bounds=(0, 1e6),
-            doc="Component molar flowrate [mol/s]",
+            doc="total molar flowrate [mol/s]",
             units=pyunits.mol / pyunits.s,
         )
         self.pressure = Var(
@@ -608,7 +613,7 @@ class FlueGasStateBlockData(StateBlockData):
         self.temperature = Var(
             domain=Reals,
             initialize=500,
-            bounds=(200, 1500),
+            bounds=(200, 2000),
             doc="State temperature [K]",
             units=pyunits.K,
         )
@@ -656,8 +661,8 @@ class FlueGasStateBlockData(StateBlockData):
                 self.params.temperature_crit[j] * self.mole_frac_comp[j] for j in comps
             )
         )
-        # self.pressure_red = Expression(expr=self.pressure / self.pressure_crit)
-        # self.temperature_red = Expression(expr=self.temperature / self.temperature_crit)
+        self.pressure_red = Expression(expr=self.pressure / self.pressure_crit)
+        self.temperature_red = Expression(expr=self.temperature / self.temperature_crit)
 
         self.compress_fact = Expression(expr=1.0, doc="Vapor Compressibility Factor")
 

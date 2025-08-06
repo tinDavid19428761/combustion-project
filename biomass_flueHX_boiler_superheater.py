@@ -73,8 +73,9 @@ from idaes.models.unit_models.separator import SplittingType, EnergySplittingTyp
 from idaes.core.util.model_diagnostics import (
     DiagnosticsToolbox,
 )
-
+# from idaes.models_extra.power_generation.properties.flue_gas_ideal import FlueGasParameterBlock
 from adapted_flue_gas_ideal import FlueGasParameterBlock
+
 
 m = ConcreteModel()
 
@@ -82,6 +83,7 @@ m.fs = FlowsheetBlock(dynamic=False)
 
 # m.fs.biomass_properties = GenericParameterBlock(**configuration)
 m.fs.biomass_properties = FlueGasParameterBlock(components=["N2", "O2", "CO2", "H2O","ash", "biomass"])
+# m.fs.biomass_properties = FlueGasParameterBlock(components=["N2", "O2", "CO2", "H2O"])
 m.fs.reaction_params = BMCombReactionParameterBlock(
     property_package=m.fs.biomass_properties
 )
@@ -104,8 +106,10 @@ m.fs.superheater = HeatExchanger(
     delta_temperature_callback=delta_temperature_amtd_callback,
     hot_side_name="shell",
     cold_side_name="tube",
-    shell={"property_package": m.fs.biomass_properties},
-    tube={"property_package": m.fs.steam_properties}
+    shell={"property_package": m.fs.biomass_properties,
+           "has_pressure_change": False},
+    tube={"property_package": m.fs.steam_properties,
+          "has_pressure_change": False}
 )
 
 m.fs.boiler_hx = HeatExchanger(
@@ -143,7 +147,7 @@ TransformationFactory("network.expand_arcs").apply_to(m)
 #specifying reaction package parameters
 m.fs.reaction_params.h.fix(0.06) #h and w in dh_rxn calculation
 m.fs.reaction_params.w.fix(0.09)
-m.fs.reaction_params.rate_reaction_stoichiometry["R1","Sol","ash"]=0.02 #specify ash content
+m.fs.reaction_params.rate_reaction_stoichiometry["R1","Vap","ash"]=0.02 #specify ash content
 
 #reaction conversion constraint
 m.fs.fire_side.conversion = Var(initialize=1, bounds=(0,1))
@@ -155,25 +159,19 @@ m.fs.fire_side.conversion_constraint = Constraint(
     )
 )
 
-# m.fs.fire_side.conversion_constraint = Constraint(
-#     expr=m.fs.fire_side.conversion*m.fs.fire_side.inlet.flow_mol_comp[0,"biomass"]
-#     == (
-#         m.fs.fire_side.inlet.flow_mol_comp[0,"biomass"]
-#         -m.fs.fire_side.outlet.flow_mol_comp[0,"biomass"]
-#     )
-# )
 m.fs.fire_side.conversion.fix(1)
 
 #modelling Q_loss_casing_convection
-m.fs.fire_side.ohtc = Param(initialize=250, units=pyunits.J/pyunits.m**2/pyunits.K/pyunits.s, doc="boiler casing overall heat transfer coefficient")
+m.fs.fire_side.caseohtc = Param(initialize=250, units=pyunits.J/pyunits.m**2/pyunits.K/pyunits.s, doc="boiler casing overall heat transfer coefficient")
 m.fs.fire_side.surface_area = Param(initialize=0.02, units=pyunits.m**2, doc="casing outer surface area")
 m.fs.fire_side.surface_temp = Param(initialize=55+273.12, units=pyunits.K, doc="outer skin temperature of boiler")
 
 m.fs.fire_side.heat_loss_constraint = Constraint(
     expr=-m.fs.fire_side.heat_duty[0]==
-    (m.fs.fire_side.ohtc*m.fs.fire_side.surface_area*(m.fs.fire_side.outlet.temperature[0]-m.fs.fire_side.surface_temp))
+    (m.fs.fire_side.caseohtc*m.fs.fire_side.surface_area*(m.fs.fire_side.outlet.temperature[0]-m.fs.fire_side.surface_temp))
 )
-# mole_frac_comp
+# m.fs.fire_side.heat_duty[0].fix(-6000)
+
 
 #reactor feed stream
 m.fs.fire_side.inlet.mole_frac_comp[0,"N2"].fix(0.7)
@@ -187,11 +185,19 @@ m.fs.fire_side.inlet.temperature.fix(400)
 m.fs.fire_side.inlet.pressure.fix(101325)
 m.fs.fire_side.inlet.flow_mol.fix(40)
 
+print(degrees_of_freedom(m.fs.fire_side))
+m.fs.fire_side.initialize(outlvl=idaeslog.INFO)
+m.fs.fire_side.report()
+
 #specifying ash separation
 m.fs.ash_sep.split_fraction[0,"ash_out","ash"].fix(1)
 m.fs.ash_sep.split_fraction[0,"ash_out","biomass"].fix(1)
-# m.fs.ash_sep.split_fraction[0,"ash","Vap"].fix(0)
+m.fs.ash_sep.split_fraction[0,"ash_out","N2"].fix(0)
+m.fs.ash_sep.split_fraction[0,"ash_out","O2"].fix(0)
+m.fs.ash_sep.split_fraction[0,"ash_out","CO2"].fix(0)
+m.fs.ash_sep.split_fraction[0,"ash_out","H2O"].fix(0)
  
+
 m.fs.boiler_hx.tube_inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=350*pyunits.K))
 m.fs.boiler_hx.tube_outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,x=0.95)) # quality[x] = 1 - BlowDownRatio
 m.fs.superheater.tube_outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=400*pyunits.K))
@@ -212,8 +218,8 @@ heuristic_tear_set = seq.tear_set_arcs(G, method="heuristic")
 order = seq.calculation_order(G)
 
 #for identifying tear stream:
-""" for o in heuristic_tear_set: #fs.s03
-    print(o.name) """ 
+# for o in heuristic_tear_set: #fs.s03
+#     print(o.name)
 
 tear_guesses = {
     "mole_frac_comp": {
@@ -230,37 +236,44 @@ tear_guesses = {
     "pressure": {0: 101325},
 }
 
-seq.set_guesses_for(m.fs.boiler_hx.shell_inlet, tear_guesses)
+# seq.set_guesses_for(m.fs.boiler_hx.shell_inlet, tear_guesses)
+seq.set_guesses_for(m.fs.superheater.shell_outlet, tear_guesses)
 
 def function(unit):
     unit.initialize(outlvl=idaeslog.INFO)
-
+    print(degrees_of_freedom(unit))
+    unit.report()
 print(degrees_of_freedom(m))  
 seq.run(m, function)
 
+dt = DiagnosticsToolbox(m)
+dt.report_structural_issues()
+dt.display_underconstrained_set()
+dt.display_components_with_inconsistent_units()
+
 #pre-solve [actual] re-specification
-m.fs.fire_side.inlet.flow_mol.unfix()
-m.fs.boiler_hx.shell_outlet.temperature.fix(500)
+# m.fs.fire_side.inlet.flow_mol.unfix()
+# m.fs.boiler_hx.shell_outlet.temperature.fix(501)
 
-solver=SolverFactory("ipopt")
-status=solver.solve(m,tee=True)
+# solver=SolverFactory("ipopt")
+# status=solver.solve(m,tee=True)
 
-print(degrees_of_freedom(m))
-assert degrees_of_freedom(m) == 0
+# print(degrees_of_freedom(m))
+# assert degrees_of_freedom(m) == 0
 
-m.fs.boiler_eff = Expression(
-    expr = (m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/(m.fs.fire_side.rate_reaction_extent[0,"R1"]*-m.fs.reaction_params.dh_rxn["R1"])
-)
+# m.fs.boiler_eff = Expression(
+#     expr = (m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/(m.fs.fire_side.rate_reaction_extent[0,"R1"]*-m.fs.reaction_params.dh_rxn["R1"])
+# )
 
-#results
-m.fs.fire_side.report()
-m.fs.superheater.report()
-m.fs.boiler_hx.report()
-m.fs.bdw_sep.report()
-m.fs.ash_sep.report()
-print(f"    Boiler Efficiency: {value(m.fs.boiler_eff)*100:.2f}%")
-print(f"    direct heat loss:{value(m.fs.fire_side.heat_duty[0]):.2f}J/s")
-print(value(m.fs.boiler_hx.cold_side.properties_out[0].enth_mol_phase["Liq"]))
+# #results
+# m.fs.fire_side.report()
+# m.fs.superheater.report()
+# m.fs.boiler_hx.report()
+# m.fs.bdw_sep.report()
+# m.fs.ash_sep.report()
+# print(f"    Boiler Efficiency: {value(m.fs.boiler_eff)*100:.2f}%")
+# print(f"    direct heat loss:{value(m.fs.fire_side.heat_duty[0]):.2f}J/s")
+# print(value(m.fs.boiler_hx.cold_side.properties_out[0].enth_mol_phase["Liq"]))
 
 
 

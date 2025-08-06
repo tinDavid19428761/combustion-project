@@ -11,12 +11,13 @@ import idaes.logger as idaeslog
 from idaes.models.properties.modular_properties.state_definitions import FTPx
 from idaes.models.properties.modular_properties.eos.ideal import Ideal
 from idaes.models.properties.modular_properties.pure import ConstantProperties, ChapmanEnskogLennardJones 
+from idaes.models.properties.modular_properties.transport_properties.viscosity_wilke import ViscosityWilke
 from idaes.models.properties.modular_properties.pure import ChapmanEnskog
 from idaes.models.properties.modular_properties.pure.ChapmanEnskog import collision_integral_neufeld_callback 
 from idaes.models.properties.modular_properties.pure import NIST
 from idaes.core import PhaseType as PT
 from idaes.models_extra.power_generation.properties.flue_gas_ideal import FlueGasStateBlock
-
+from idaes.models.properties.modular_properties.transport_properties.viscosity_wilke import wilke_phi_ij_callback, herring_zimmer_phi_ij_callback
 
 # Set up logger
 _log = idaeslog.getLogger(__name__)
@@ -25,30 +26,46 @@ configuration = {
     # Specifying components
     "components": {
         
-        "ash": {
+        "O2": {
             "type": Component,
-            "elemental_composition": {"Random":1}, #mainly SiO2, Al2O3, CaO, Fe2O3, MgO
-            "cp_mol_sol_comp": ConstantProperties.Constant,
-            "enth_mol_sol_comp": ConstantProperties.Constant,
-            "dens_mol_sol_comp": ConstantProperties.Constant,
-            "visc_d_phase_comp": {"Sol": ConstantProperties.Constant},
-            'valid_phase_types': PT.solidPhase,
+            "elemental_composition": {"O":2},
+            "enth_mol_ig_comp": NIST,
+            "cp_mol_ig_comp": NIST,
+            "visc_d_phase_comp": {"Vap": ChapmanEnskogLennardJones},
+            'valid_phase_types': PT.vaporPhase,
             "parameter_data": {
-                "mw": (66.37, pyunits.g / pyunits.mol),
-                "cp_mol_sol_comp_coeff": (68.27, pyunits.J/pyunits.mol/pyunits.K), #Cp weighted average by composition of constituents
-                "dens_mol_sol_comp_coeff": (2960.415544, pyunits.mol/pyunits.m**3), #ignore
-                "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),          #ignore
-                "enrt_mol_form_sol_comp_ref": (158.1, pyunits.J/pyunits.mol/pyunits.K), #ignoer
-                "visc_d_Sol_comp_coeff": (3.2833e-05, pyunits.Pa*pyunits.s)  
-            },   
+                "mw": (31.9988, pyunits.g / pyunits.mol),  # [4]
+                "pressure_crit": (50.43e5, pyunits.Pa),  # [8]
+                "temperature_crit": (154.58, pyunits.K),  # [8]
+                "cp_mol_ig_comp_coeff": { # valid range 100 K - 700 K
+                    "A": (30.03235	, pyunits.J / pyunits.mol / pyunits.K),  # [4] #valid range  700-2000
+                    "B": (8.772972, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),
+                    "C": (-3.988133, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-2),
+                    "D": (0.788313, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-3),
+                    "E": (-0.741599, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**2),
+                    "F": (-11.32468, pyunits.kJ / pyunits.mol),
+                    "G": (236.1663, pyunits.J / pyunits.mol /pyunits.K),
+                    "H": (0, pyunits.kJ / pyunits.mol)
+                },
+                "enth_mol_form_vap_comp_ref": (0, pyunits.kJ / pyunits.mol),  # [4]
+                # "visc_d_Vap_comp_coeff": (3.8642e-05	, pyunits.Pa*pyunits.s)
+                "lennard_jones_sigma": (2.641, pyunits.angstrom),
+                "lennard_jones_epsilon_reduced": (809.1, pyunits.K),
 
-        },        
+            },
+        },     
     },
 
 # Specifying phases
 "phases": {
-    # "Vap": {"type": VaporPhase, "equation_of_state": Ideal},#Pv=nT
-    "Sol": {"type": SolidPhase, "equation_of_state": Ideal},
+    "Vap": {"type": VaporPhase, 
+            "equation_of_state": Ideal,
+            "visc_d_phase": ViscosityWilke,
+            "transport_property_options": {
+        "viscosity_phi_ij_callback": wilke_phi_ij_callback,
+      }
+            },#Pv=nT
+    # "Sol": {"type": SolidPhase, "equation_of_state": Ideal},
 
 },
 # Set base units of measurement
