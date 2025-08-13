@@ -74,9 +74,7 @@ m = ConcreteModel()
 m.fs = FlowsheetBlock(dynamic=False)
 
 m.fs.biomass_properties = GenericParameterBlock(**configuration)
-m.fs.reaction_params = BMCombReactionParameterBlock(
-    property_package=m.fs.biomass_properties
-)
+m.fs.reaction_params = BMCombReactionParameterBlock(property_package=m.fs.biomass_properties)
 
 m.fs.steam_properties = HelmholtzParameterBlock(
         pure_component="h2o", amount_basis=AmountBasis.MOLE,
@@ -168,7 +166,7 @@ m.fs.fire_side.inlet.flow_mol.fix(40)
 m.fs.ash_sep.split_fraction[0,"ash","Sol"].fix(1)
 m.fs.ash_sep.split_fraction[0,"ash","Vap"].fix(0)
 
-m.fs.boiler_hx.tube_inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=350*pyunits.K))
+m.fs.boiler_hx.tube_inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=300*pyunits.K))
 m.fs.boiler_hx.tube_outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,x=0.95)) # quality[x] = 1 - BlowDownRatio
 m.fs.superheater.tube_outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=400*pyunits.K))
 m.fs.superheater.overall_heat_transfer_coefficient[0].fix(100)
@@ -216,7 +214,7 @@ seq.run(m, function)
 
 #pre-solve [actual] re-specification
 m.fs.fire_side.inlet.flow_mol.unfix()
-m.fs.boiler_hx.shell_outlet.temperature.fix(500)
+m.fs.boiler_hx.shell_outlet.temperature.fix(373.15)
 
 solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)
@@ -235,7 +233,7 @@ m.fs.boiler_hx.report()
 m.fs.bdw_sep.report()
 m.fs.ash_sep.report()
 print(f"    Boiler Efficiency: {value(m.fs.boiler_eff)*100:.2f}%")
-print(f"    direct heat loss:{value(m.fs.fire_side.heat_duty[0]):.2f}J/s")
+print(f"    casing heat loss:{value(m.fs.fire_side.heat_duty[0]):.2f}J/s")
 print(value(m.fs.boiler_hx.cold_side.properties_out[0].enth_mol_phase["Liq"]))
 
 

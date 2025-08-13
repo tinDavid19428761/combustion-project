@@ -66,7 +66,7 @@ configuration = {
 
         "ash": {
             "type": Component,
-            "elemental_composition": {"Random":1}, #mainly SiO2, Al2O3, CaO, Fe2O3, MgO
+            "elemental_composition": {"ash":1}, #mainly SiO2, Al2O3, CaO, Fe2O3, MgO
             "cp_mol_sol_comp": ConstantProperties.Constant,
             "enth_mol_sol_comp": ConstantProperties.Constant,
             "dens_mol_sol_comp": ConstantProperties.Constant,
