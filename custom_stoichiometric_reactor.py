@@ -29,6 +29,7 @@ from idaes.core import (
     UnitModelBlockData,
     useDefault,
 )
+from idaes.models_extra.power_generation.unit_models.boiler_heat_exchanger import BoilerHeatExchanger
 from idaes.core.util.config import (
     is_physical_parameter_block,
     is_reaction_parameter_block,
@@ -242,10 +243,10 @@ see reaction package for documentation.}""",
         # )
 
         self.conversion = Var(initialize=1, bounds=(0,1))
+
         @self.Constraint(
                 self.flowsheet().time,
-                self.config.reaction_package.rate_reaction_idx
-        )
+                self.config.reaction_package.rate_reaction_idx)
         #conversion equations requires some sort of component balance...
         def conversion_performance_eqn(b, t, r):
             l = self.config.reaction_package.reactant_list[1] #first indice biomass or fuel in property package
@@ -269,7 +270,9 @@ see reaction package for documentation.}""",
             self.deltaP = Reference(self.control_volume.deltaP[:])
 
     def _get_performance_contents(self, time_point=0):
-        var_dict = {"Conversion": self.conversion}
+        var_dict = {
+            "Conversion": self.conversion,
+            }
         # var_dict = {}
         # for r in self.config.reaction_package.rate_reaction_idx:
         #     var_dict[f"Reaction Extent [{r}]"] = self.rate_reaction_extent[

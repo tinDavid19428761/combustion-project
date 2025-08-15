@@ -52,7 +52,9 @@ class BMCombReactionParameterData(ReactionParameterBlock):
                                               'O2',
                                               'CO',
                                               'N2',
-                                              'biomass'])
+                                              'biomass',
+                                              'ash',
+                                              ])
 
         # Reaction Index
         self.rate_reaction_idx = Set(initialize=["R1"])
@@ -64,9 +66,9 @@ class BMCombReactionParameterData(ReactionParameterBlock):
                                             ("R1", "Sol", "biomass"): -1,
                                             ("R1", "Vap", "N2"): 0,
                                             ("R1", "Vap", "CO"): 0,
-                                            ("R1", "Sol", "ash"): 0.01#self.ash_content
+                                            ("R1", "Sol", "ash"): 0.01 #self.ash_content
                                             }
-
+        # self.rate_reaction_stoichiometry["R1","Sol","ash"] = Var(initialize = 0.01)
         
         self.reactant_list=Set(initialize=["biomass","O2"])
         
