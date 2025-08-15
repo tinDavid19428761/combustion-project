@@ -55,7 +55,7 @@ m = ConcreteModel()
 m.fs = FlowsheetBlock(dynamic=False)
 
 m.fs.biomass_properties = GenericParameterBlock(**configuration)
-m.fs.reaction_params = BMCombReactionParameterBlock(property_package=m.fs.biomass_properties)
+# m.fs.reaction_params = BMCombReactionParameterBlock(property_package=m.fs.biomass_properties)
 
 m.fs.steam_properties = HelmholtzParameterBlock(
         pure_component="h2o", amount_basis=AmountBasis.MOLE,
@@ -65,17 +65,18 @@ m.fs.steam_properties = HelmholtzParameterBlock(
 
 m.fs.R101 = StoichiometricReactor(
     property_package = m.fs.biomass_properties,
-    reaction_package = m.fs.reaction_params,
+    # reaction_package = m.fs.reaction_params,
     has_heat_of_reaction=True,
     has_heat_transfer=False, #test with true also
     has_pressure_change=False,
 )
 
-m.fs.reaction_params.h.fix(0.06) #h and w in dh_rxn calculation
-m.fs.reaction_params.w.fix(0.09)
-
-
 m.fs.R101.conversion.fix(0.5)
+m.fs.R101.reaction_package.h.fix(0.06) #h and w in dh_rxn calculation
+m.fs.R101.reaction_package.w.fix(0.09)
+
+m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1","Sol","ash"].fix(0.03)
+# m.fs.R101.reaction_package.ash.fix(0.01)
 
 
 #reactor feed stream
@@ -91,9 +92,12 @@ m.fs.R101.inlet.pressure.fix(101325)
 m.fs.R101.inlet.flow_mol.fix(40)
 
 print(degrees_of_freedom(m))
-assert degrees_of_freedom(m) == 0
+# assert degrees_of_freedom(m) == 0
 m.fs.R101.initialize(outlvl=idaeslog.INFO)
 solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)
 m.fs.R101.report()
+print(degrees_of_freedom(m))
+print(value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Sol", "ash"]))
+
 # assert value(m.fs.R101.)

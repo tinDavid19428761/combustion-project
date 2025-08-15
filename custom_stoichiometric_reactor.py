@@ -35,6 +35,10 @@ from idaes.core.util.config import (
     is_reaction_parameter_block,
 )
 
+from property_packages.combustion.biomass_combustion_rp import BMCombReactionParameterBlock
+
+
+
 __author__ = "Chinedu Okoli, Andrew Lee"
 
 
@@ -167,31 +171,32 @@ and used when constructing these,
 see property package for documentation.}""",
         ),
     )
-    CONFIG.declare(
-        "reaction_package",
-        ConfigValue(
-            default=None,
-            domain=is_reaction_parameter_block,
-            description="Reaction package to use for control volume",
-            doc="""Reaction parameter object used to define reaction calculations,
-**default** - None.
-**Valid values:** {
-**None** - no reaction package,
-**ReactionParameterBlock** - a ReactionParameterBlock object.}""",
-        ),
-    )
-    CONFIG.declare(
-        "reaction_package_args",
-        ConfigBlock(
-            implicit=True,
-            description="Arguments to use for constructing reaction packages",
-            doc="""A ConfigBlock with arguments to be passed to a reaction block(s)
-and used when constructing these,
-**default** - None.
-**Valid values:** {
-see reaction package for documentation.}""",
-        ),
-    )
+#     CONFIG.declare(
+#         "reaction_package",
+#         ConfigValue(
+#             default=useDefault,
+#             domain=is_physical_parameter_block,
+#             description="Property package to use for control volume",
+#             doc="""Property parameter object used to define property calculations,
+# **default** - useDefault.
+# **Valid values:** {
+# **useDefault** - use default package from parent model or flowsheet,
+# **PropertyParameterObject** - a PropertyParameterBlock object.}""",
+#         ),
+#     )
+#     CONFIG.declare(
+#         "reaction_package_args",
+#         ConfigBlock(
+#             implicit=True,
+#             description="Arguments to use for constructing property packages",
+#             doc="""A ConfigBlock with arguments to be passed to a property block(s)
+# and used when constructing these,
+# **default** - None.
+# **Valid values:** {
+# see property package for documentation.}""",
+#         ),
+#     )
+
 
     def build(self):
         """
@@ -203,14 +208,13 @@ see reaction package for documentation.}""",
         """
         # Call UnitModel.build to setup dynamics
         super(StoichiometricReactorData, self).build()
-
+        self.reaction_package = BMCombReactionParameterBlock(property_package=self.config.property_package)
         # Build Control Volume
         self.control_volume = ControlVolume0DBlock(
             dynamic=self.config.dynamic,
             property_package=self.config.property_package,
             property_package_args=self.config.property_package_args,
-            reaction_package=self.config.reaction_package,
-            reaction_package_args=self.config.reaction_package_args,
+            reaction_package=self.reaction_package,
         )
 
         self.control_volume.add_state_blocks(has_phase_equilibrium=False)
@@ -243,13 +247,15 @@ see reaction package for documentation.}""",
         # )
 
         self.conversion = Var(initialize=1, bounds=(0,1))
+        # self.reaction_package.rate_reaction_stoichiometry["R1","Sol","ash"] = 0.03
+
 
         @self.Constraint(
                 self.flowsheet().time,
-                self.config.reaction_package.rate_reaction_idx)
+                self.reaction_package.rate_reaction_idx)
         #conversion equations requires some sort of component balance...
         def conversion_performance_eqn(b, t, r):
-            l = self.config.reaction_package.reactant_list[1] #first indice biomass or fuel in property package
+            l = self.reaction_package.reactant_list[1] #first indice biomass or fuel in property package
             return b.conversion == (
             b.control_volume.rate_reaction_extent[t,r]
              /(b.control_volume.properties_in[t].mole_frac_comp[l]
@@ -272,6 +278,9 @@ see reaction package for documentation.}""",
     def _get_performance_contents(self, time_point=0):
         var_dict = {
             "Conversion": self.conversion,
+            "Ash Content": self.reaction_package.rate_reaction_stoichiometry["R1","Sol","ash"],
+            "Water Content": self.reaction_package.w,
+            "H2 Content": self.reaction_package.h,
             }
         # var_dict = {}
         # for r in self.config.reaction_package.rate_reaction_idx:
