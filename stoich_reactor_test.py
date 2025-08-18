@@ -12,6 +12,7 @@ from pyomo.environ import (
     units as pyunits
 )
 from pyomo.network import Arc, SequentialDecomposition
+# from pytest import approx
 
 #Todo add the four other unit operations
 from idaes.models.unit_models import (
@@ -48,7 +49,7 @@ from idaes.core.util.model_diagnostics import (
 )
 
 from custom_stoichiometric_reactor import StoichiometricReactor
-
+import unittest
 
 m = ConcreteModel()
 
@@ -76,7 +77,6 @@ m.fs.R101.reaction_package.h.fix(0.06) #h and w in dh_rxn calculation
 m.fs.R101.reaction_package.w.fix(0.09)
 
 m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1","Sol","ash"].fix(0.03)
-# m.fs.R101.reaction_package.ash.fix(0.01)
 
 
 #reactor feed stream
@@ -92,12 +92,13 @@ m.fs.R101.inlet.pressure.fix(101325)
 m.fs.R101.inlet.flow_mol.fix(40)
 
 print(degrees_of_freedom(m))
-# assert degrees_of_freedom(m) == 0
+assert degrees_of_freedom(m) == 0
 m.fs.R101.initialize(outlvl=idaeslog.INFO)
 solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)
 m.fs.R101.report()
-print(degrees_of_freedom(m))
 print(value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Sol", "ash"]))
+print(value(m.fs.R101.reaction_package.dh_rxn["R1"]))
 
-# assert value(m.fs.R101.)
+# assert value(m.fs.R101.reaction_package.dh_rxn["R1"]) == approx(-2749556.4, rel=1e-6)
+# assert value(m.fs.R101.outlet.temperature) == approx(727.15, rel=1e-3)

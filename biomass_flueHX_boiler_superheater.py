@@ -109,12 +109,13 @@ m.fs.boiler_hx = HeatExchanger(
 m.fs.ash_sep = Separator(
     property_package = m.fs.biomass_properties,
     split_basis = SplittingType.phaseFlow,
-    outlet_list = ["flue", "ash"]
+    outlet_list = ["flue", "ash_out"]
 )
 
 m.fs.bdw_sep = HelmPhaseSeparator(
     property_package = m.fs.steam_properties,
 )
+
 
 #reactor flow sheet: feed-> reactor -> hot flue -> HX -> flue
 m.fs.s01 = Arc(source=m.fs.fire_side.outlet,destination=m.fs.ash_sep.inlet)
@@ -124,11 +125,13 @@ m.fs.s04 = Arc(source=m.fs.boiler_hx.tube_outlet,destination=m.fs.bdw_sep.inlet)
 m.fs.s05 = Arc(source=m.fs.bdw_sep.vap_outlet,destination=m.fs.superheater.tube_inlet)
 TransformationFactory("network.expand_arcs").apply_to(m)
 
+""" not yet added """
 #specifying reaction package parameters
 m.fs.reaction_params.h.fix(0.06) #h and w in dh_rxn calculation
 m.fs.reaction_params.w.fix(0.09)
-m.fs.reaction_params.rate_reaction_stoichiometry["R1","Sol","ash"]=0.02 #specify ash content
+m.fs.reaction_params.rate_reaction_stoichiometry["R1","Sol","ash"]=0.02 #specify ash content [turned off for custom stoich UM testing]
 
+'''added to performance eqs'''
 #reaction conversion constraint
 m.fs.fire_side.conversion = Var(initialize=1, bounds=(0,1))
 m.fs.fire_side.conversion_constraint = Constraint(
@@ -158,13 +161,13 @@ m.fs.fire_side.inlet.mole_frac_comp[0,"H2O"].fix(1e-20)
 m.fs.fire_side.inlet.mole_frac_comp[0,"CO"].fix(1e-20) 
 m.fs.fire_side.inlet.mole_frac_comp[0,"biomass"].fix(0.01) 
 m.fs.fire_side.inlet.mole_frac_comp[0,"ash"].fix(1e-20)
-m.fs.fire_side.inlet.temperature.fix(400)
+m.fs.fire_side.inlet.temperature.fix(300)
 m.fs.fire_side.inlet.pressure.fix(101325)
 m.fs.fire_side.inlet.flow_mol.fix(40)
 
 #specifying ash separation
-m.fs.ash_sep.split_fraction[0,"ash","Sol"].fix(1)
-m.fs.ash_sep.split_fraction[0,"ash","Vap"].fix(0)
+m.fs.ash_sep.split_fraction[0,"ash_out","Sol"].fix(1)
+m.fs.ash_sep.split_fraction[0,"ash_out","Vap"].fix(0)
 
 m.fs.boiler_hx.tube_inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=300*pyunits.K))
 m.fs.boiler_hx.tube_outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,x=0.95)) # quality[x] = 1 - BlowDownRatio
@@ -214,7 +217,7 @@ seq.run(m, function)
 
 #pre-solve [actual] re-specification
 m.fs.fire_side.inlet.flow_mol.unfix()
-m.fs.boiler_hx.shell_outlet.temperature.fix(373.15)
+m.fs.boiler_hx.shell_outlet.temperature.fix(400)
 
 solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)
@@ -225,6 +228,9 @@ assert degrees_of_freedom(m) == 0
 m.fs.boiler_eff = Expression(
     expr = (m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/(m.fs.fire_side.rate_reaction_extent[0,"R1"]*-m.fs.reaction_params.dh_rxn["R1"])
 )
+m.fs.biomass_mass_flow = Expression(#units g/s 
+    expr = (m.fs.fire_side.inlet.mole_frac_comp[0,"biomass"])*(m.fs.fire_side.inlet.flow_mol[0])*m.fs.biomass_properties.biomass.mw
+)
 
 #results
 m.fs.fire_side.report()
@@ -233,7 +239,8 @@ m.fs.boiler_hx.report()
 m.fs.bdw_sep.report()
 m.fs.ash_sep.report()
 print(f"    Boiler Efficiency: {value(m.fs.boiler_eff)*100:.2f}%")
-print(f"    casing heat loss:{value(m.fs.fire_side.heat_duty[0]):.2f}J/s")
+print(f"    casing heat loss:{value(m.fs.fire_side.heat_duty[0]):.2f} J/s")
+print(f"    biomass demand: {value(m.fs.biomass_mass_flow):.3f} g/s")
 print(value(m.fs.boiler_hx.cold_side.properties_out[0].enth_mol_phase["Liq"]))
 
 

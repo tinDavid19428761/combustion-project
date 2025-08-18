@@ -16,7 +16,7 @@ Standard IDAES STOICHIOMETRIC reactor model
 """
 
 # Import Pyomo libraries
-from pyomo.environ import Reference, Var, Param
+from pyomo.environ import Reference, Var, Param, units as pyunits
 from pyomo.common.config import ConfigBlock, ConfigValue, In, Bool
 
 # Import IDAES cores
@@ -171,31 +171,6 @@ and used when constructing these,
 see property package for documentation.}""",
         ),
     )
-#     CONFIG.declare(
-#         "reaction_package",
-#         ConfigValue(
-#             default=useDefault,
-#             domain=is_physical_parameter_block,
-#             description="Property package to use for control volume",
-#             doc="""Property parameter object used to define property calculations,
-# **default** - useDefault.
-# **Valid values:** {
-# **useDefault** - use default package from parent model or flowsheet,
-# **PropertyParameterObject** - a PropertyParameterBlock object.}""",
-#         ),
-#     )
-#     CONFIG.declare(
-#         "reaction_package_args",
-#         ConfigBlock(
-#             implicit=True,
-#             description="Arguments to use for constructing property packages",
-#             doc="""A ConfigBlock with arguments to be passed to a property block(s)
-# and used when constructing these,
-# **default** - None.
-# **Valid values:** {
-# see property package for documentation.}""",
-#         ),
-#     )
 
 
     def build(self):
@@ -240,22 +215,29 @@ see property package for documentation.}""",
         self.add_inlet_port()
         self.add_outlet_port()
 
-        
-        # Add performance equations
-        # self.rate_reaction_extent = Reference(
-        #     self.control_volume.rate_reaction_extent[...]
-        # )
-
+        #creating conversion variable
         self.conversion = Var(initialize=1, bounds=(0,1))
-        # self.reaction_package.rate_reaction_stoichiometry["R1","Sol","ash"] = 0.03
+        
+        #Q_loss = UAdT
+        self.ohtc = Var(initialize=250, units=pyunits.J/pyunits.m**2/pyunits.K/pyunits.s)
+        self.surface_area = Var(initialize=0.02, units=pyunits.m**2, doc="casing outer surface area")
+        self.surface_temp = Var(initialize=55+273.12, units=pyunits.K, doc="outer skin temperature of boiler")
+
+        @self.Constraint(
+                self.flowsheet().time,
+        )
+        def heat_loss_eqn(b,t):
+            return b.heat_duty[0] == (
+            b.ohtc*b.surface_area*(b.outlet.temeprature[0]-b.surface_temp))
+        
+        
 
 
         @self.Constraint(
                 self.flowsheet().time,
                 self.reaction_package.rate_reaction_idx)
-        #conversion equations requires some sort of component balance...
         def conversion_performance_eqn(b, t, r):
-            l = self.reaction_package.reactant_list[1] #first indice biomass or fuel in property package
+            l = self.reaction_package.reactant_list[1] #1 indexes biomass or fuel in property package
             return b.conversion == (
             b.control_volume.rate_reaction_extent[t,r]
              /(b.control_volume.properties_in[t].mole_frac_comp[l]
@@ -281,12 +263,11 @@ see property package for documentation.}""",
             "Ash Content": self.reaction_package.rate_reaction_stoichiometry["R1","Sol","ash"],
             "Water Content": self.reaction_package.w,
             "H2 Content": self.reaction_package.h,
+            "heat loss": self.heat_duty,
+            "overall heat transfer coefficient": self.ohtc,
+            "surface area": self.surface_area,
+            "surface temperature": self.surface_temp,
             }
-        # var_dict = {}
-        # for r in self.config.reaction_package.rate_reaction_idx:
-        #     var_dict[f"Reaction Extent [{r}]"] = self.rate_reaction_extent[
-        #         time_point, r
-        #     ]
         if hasattr(self, "heat_duty"):
             var_dict["Heat Duty"] = self.heat_duty[time_point]
         if hasattr(self, "deltaP"):
