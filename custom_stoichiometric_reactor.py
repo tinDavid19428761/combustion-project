@@ -16,7 +16,7 @@ Standard IDAES STOICHIOMETRIC reactor model
 """
 
 # Import Pyomo libraries
-from pyomo.environ import Reference, Var, Param, units as pyunits
+from pyomo.environ import Reference, Var, Param, units as pyunits, value
 from pyomo.common.config import ConfigBlock, ConfigValue, In, Bool
 
 # Import IDAES cores
@@ -231,30 +231,25 @@ see property package for documentation.}""",
 
         #creating conversion variable
         self.conversion = Var(self.reaction_package.rate_reaction_idx ,initialize=1, bounds=(0,1), units="dimensionless")
-        
 
         #add heat loss config option to turn off/on heat loss correlation. (may also need logic for front end state vars implementation?)
         #Q_loss = UAdT
         self.ohtc = Var(initialize=250, units=pyunits.J/pyunits.m**2/pyunits.K/pyunits.s)
         self.surface_area = Var(initialize=0.02, units=pyunits.m**2, doc="casing outer surface area")
         self.surface_temp = Var(initialize=55+273.12, units=pyunits.K, doc="outer skin temperature of boiler")
-        # self.heat_duty = Reference(self.control_volume.heat[:])
 
         @self.Constraint(
                 self.flowsheet().time,
         )
         def heat_loss_eqn(b,t):
             return b.heat_duty[0] == (
-            b.ohtc*b.surface_area*(-b.outlet.temperature[0]+b.surface_temp))
+            b.ohtc*b.surface_area*(-b.outlet.temperature[0]+b.surface_temp)
+            )
         
-        
-
-        #for r in reaction_package.rate_reaction_idx, iterate conversion for multiple reactions
         @self.Constraint(
                 self.flowsheet().time,
                 self.reaction_package.rate_reaction_idx)
         def conversion_performance_eqn(b, t, r):
-            # l = self.reaction_package.reactant_list[1] #1 indexes biomass or fuel in property package
             l = self.reaction_package.limit_reactant_dict[r]
             return b.conversion[r] == (
             b.control_volume.rate_reaction_extent[t,r]
@@ -263,11 +258,8 @@ see property package for documentation.}""",
             ))
         
 
-        
-
     def _get_performance_contents(self, time_point=0):
         var_dict = {
-            # "Conversion": self.conversion,
             "Ash Content": self.reaction_package.rate_reaction_stoichiometry["R1","Sol","ash"],
             "Water Content": self.reaction_package.w,
             "H2 Content": self.reaction_package.h,

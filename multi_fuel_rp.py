@@ -43,7 +43,7 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
         '''
         super(MultiCombReactionParameterData, self).build()
 
-        self._reaction_block_class = BMReactionBlock#ultiCombReactionBlock
+        self._reaction_block_class = BMReactionBlock
 
         # List of valid phases in property package
         self.phase_list = Set(initialize=['Vap', 'Sol'])
@@ -112,20 +112,18 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
         
         self.h=Var(initialize=0.06) #concentration of hydrogen as a percentage of weight, h=6%
         self.w=Var(initialize=0.09) #water content of fuel as percentage of weight
-        self.gcv=Param(initialize=20.2, units=pyunits.MJ/pyunits.kg, doc="gross calorific value") #gross calorific value (dry basis)
-        self.ncv=(self.gcv*(1-self.w)-2.447*self.w-2.447*self.h*9.01*(1-self.w))*162.1394*1000 #J/mol from biomass molecular weight
-        #net calorific value (wet basis) (pg. 7) https://www.mbie.govt.nz/dmsdocument/125-industrial-bioenergy-
-        #ncv multiplied by 162 g/mol (cellulose) to convert from /mass to /mol basis.
+        self.gcv=Param(initialize=20.2, units=pyunits.MJ/pyunits.kg, doc="gross calorific value") 
+        self.ncv = Param(initialize=-(self.gcv*(1-self.w)-2.447*self.w-2.447*self.h*9.01*(1-self.w))*162.1394*1000, units=pyunits.J/pyunits.mol)
 
-        dh_rxn_dict = {"Rbiomass": -self.ncv, # @ w=9%, h=6% ==> ncv=-2749556.40
-                       "RCH4": -802.6
-                       } 
+        dh_rxn_dict = {
+            "Rbiomass": self.ncv, # @ w=9%, h=6% ==> ncv=-2749556.40
+            "RCH4": -802.6,
+                       }
         
         self.dh_rxn = Param(self.rate_reaction_idx, 
                           initialize = dh_rxn_dict,
                           domain=Reals,
                           doc="Heat of reaction")
-
     @classmethod
     def define_metadata(cls, obj):
         obj.add_default_units({'time': pyunits.s,

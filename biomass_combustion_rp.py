@@ -12,6 +12,8 @@ from pyomo.environ import (Constraint,
                            Set,
                            Var,
                            Param,
+                           Reals,
+                           Any,
                            units as pyunits)
 
 # Import IDAES cores
@@ -74,7 +76,7 @@ class BMCombReactionParameterData(ReactionParameterBlock):
                                             ("R1", "Vap", "H2O"): 5,
                                             ("R1", "Vap", "CO2"): 6,
                                             ("R1", "Vap", "O2"): -6,
-                                            ("R1", "Vap", "biomass"): -1,
+                                            ("R1", "Sol", "biomass"): -1,
                                             ("R1", "Vap", "N2"): 0,
                                             ("R1", "Vap", "CO"): 0,
                                             ("R1", "Sol", "ash"): 0.01,
@@ -86,27 +88,25 @@ class BMCombReactionParameterData(ReactionParameterBlock):
 
         self.limit_reactant_dict = Param(self.rate_reaction_idx, initialize={
             "R1": "biomass",
-        })
+        },
+        within=Any)
+
         
-        #calculating dh_rxn heat of reaction
-        #net calorific value (wet basis) (pg. 7) https://www.mbie.govt.nz/dmsdocument/125-industrial-bioenergy-
-        #ncv multiplied by M(cellulose) = 162 g/mol  to convert from /mass to /mol basis.
         self.h=Var(initialize=0.06) #concentration of hydrogen as a percentage of weight, h=6%
         self.w=Var(initialize=0.09) #water content of fuel as percentage of weight
-        self.gcv=Param(initialize=20.2, units=pyunits.MJ/pyunits.kg, doc="gross calorific value") #gross calorific value (dry basis)
-        self.ncv=(self.gcv*(1-self.w)-2.447*self.w-2.447*self.h*9.01*(1-self.w))*162.1394*1000 #J/mol 
-        #net calorific value (wet basis) (pg. 7) https://www.mbie.govt.nz/dmsdocument/125-industrial-bioenergy-
-        #ncv multiplied by 162 g/mo (cellulose) to convert from /mass to /mol basis.
+        # self.gcv=Param(initialize=20.2, units=pyunits.MJ/pyunits.kg, doc="gross calorific value") #gross calorific value (dry basis)
+        self.gcv=Param(initialize=20.2, units=pyunits.MJ/pyunits.kg, doc="gross calorific value") 
+        self.ncv = Param(initialize=-(self.gcv*(1-self.w)-2.447*self.w-2.447*self.h*9.01*(1-self.w))*162.1394*1000, units=pyunits.J/pyunits.mol)
 
-        self.dh_rxn_dict = {"R1": -self.ncv} # @ w=9%, h=6% ==> ncv=-2749556.40
+        dh_rxn_dict = {"R1": self.ncv, # @ w=9%, h=6% ==> ncv=-2749556.40
+                    #    "RCH4": -802.6
+                       } 
         
-        def dh_rxn():
-            return self.dh_rxn_dict
-
-        self.dh_rxn = Expression(self.rate_reaction_idx, 
-                            rule=dh_rxn(),
-                            doc="Heat of reaction")
-
+        self.dh_rxn = Var(self.rate_reaction_idx, 
+                          initialize = dh_rxn_dict,
+                          domain=Reals,
+                          doc="Heat of reaction")
+        self.dh_rxn.fix()
     @classmethod
     def define_metadata(cls, obj):
         obj.add_default_units({'time': pyunits.s,

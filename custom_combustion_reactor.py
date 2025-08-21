@@ -43,8 +43,8 @@ from multi_fuel_rp  import MultiCombReactionParameterBlock
 __author__ = "Chinedu Okoli, Andrew Lee"
 
 
-@declare_process_block_class("CombustionReactor")
-class CombustionReactorData(UnitModelBlockData):
+@declare_process_block_class("MultiCombReactor")
+class MultiCombReactorData(UnitModelBlockData):
     """
     Standard Stoichiometric Reactor Unit Model Class
     This model assumes that all given reactions are irreversible, and that each
@@ -183,7 +183,7 @@ see property package for documentation.}""",
             None
         """
         # Call UnitModel.build to setup dynamics
-        super(CombustionReactorData, self).build()
+        super(MultiCombReactorData, self).build()
         self.reaction_package = MultiCombReactionParameterBlock(property_package=self.config.property_package)
         # Build Control Volume
         self.control_volume = ControlVolume0DBlock(
@@ -238,14 +238,19 @@ see property package for documentation.}""",
         self.surface_area = Var(initialize=0.02, units=pyunits.m**2, doc="casing outer surface area")
         self.surface_temp = Var(initialize=55+273.12, units=pyunits.K, doc="outer skin temperature of boiler")
 
+        self.ash_mass = Var(initialize=0.01, units=pyunits.g/pyunits.g)
+        @self.Constraint()
+        def ash_basis_conversion_eqn(b):
+            return b.ash_mass*(162.1394/66.37) == b.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","ash"]
+
         @self.Constraint(
                 self.flowsheet().time,
         )
         def heat_loss_eqn(b,t):
             return b.heat_duty[0] == (
-            b.ohtc*b.surface_area*(-b.outlet.temperature[0]+b.surface_temp))
+            b.ohtc*b.surface_area*(-b.outlet.temperature[0]+b.surface_temp)
+            )
         
-
         @self.Constraint(
                 self.flowsheet().time,
                 self.reaction_package.rate_reaction_idx)
@@ -256,10 +261,11 @@ see property package for documentation.}""",
              /(b.control_volume.properties_in[t].mole_frac_comp[l]
              *b.control_volume.properties_in[t].flow_mol
             ))
+        
 
     def _get_performance_contents(self, time_point=0):
         var_dict = {
-            "Ash Content": self.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","ash"],
+            "Ash Mass% Content": self.ash_mass,
             "Water Content": self.reaction_package.w,
             "H2 Content": self.reaction_package.h,
             "Heat Duty": self.heat_duty,
