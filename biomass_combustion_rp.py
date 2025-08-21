@@ -44,33 +44,49 @@ class BMCombReactionParameterData(ReactionParameterBlock):
         self._reaction_block_class = BMReactionBlock
 
         # List of valid phases in property package
-        self.phase_list = Set(initialize=['Vap', 'Sol'])
+        self.phase_list = Set(initialize=["Vap", "Sol"])
 
         # Component list - a list of component identifiers
-        self.component_list = Set(initialize=['H2O',
-                                              'CO2',
-                                              'O2',
-                                              'CO',
-                                              'N2',
-                                              'biomass',
-                                              'ash',
+        self.component_list = Set(initialize=["H2O",
+                                              "CO2",
+                                              "O2",
+                                              "CO",
+                                              "N2",
+                                              "biomass",
+                                              "ash",
+                                              "CH4",
                                               ])
 
         # Reaction Index
         self.rate_reaction_idx = Set(initialize=["R1"])
 
-        # Reaction Stoichiometry
-        self.rate_reaction_stoichiometry = {("R1", "Vap", "H2O"): 5,
+        self.reaction_set = Set(initialize=[("R1", "Vap", "H2O"),
+                                            ("R1", "Vap", "CO2"),
+                                            ("R1", "Vap", "O2"),
+                                            ("R1", "Sol", "biomass"),
+                                            ("R1", "Vap", "N2"),
+                                            ("R1", "Vap", "CO"),
+                                            ("R1", "Sol", "ash"),
+                                            ("R1", "Vap", "CH4"),
+                                            ])
+        # biomass combustion stoichiometry based on cellulose
+        self.rate_reaction_stoichiometry = Var(self.reaction_set, initialize={
+                                            ("R1", "Vap", "H2O"): 5,
                                             ("R1", "Vap", "CO2"): 6,
                                             ("R1", "Vap", "O2"): -6,
                                             ("R1", "Sol", "biomass"): -1,
                                             ("R1", "Vap", "N2"): 0,
                                             ("R1", "Vap", "CO"): 0,
-                                            ("R1", "Sol", "ash"): 0.01 #self.ash_content
-                                            }
-        # self.rate_reaction_stoichiometry["R1","Sol","ash"] = Var(initialize = 0.01)
+                                            ("R1", "Sol", "ash"): 0.01,
+                                            ("R1", "Vap", "CH4"): 0,
+                                            })
+        self.rate_reaction_stoichiometry.fix()
         
-        self.reactant_list=Set(initialize=["biomass","O2"])
+        # self.reactant_list=Set(initialize=["biomass"])
+
+        self.limit_reactant_dict = Param(self.rate_reaction_idx, initialize={
+            "R1": "biomass",
+        })
         
         self.h=Var(initialize=0.06) #concentration of hydrogen as a percentage of weight, h=6%
         self.w=Var(initialize=0.09) #water content of fuel as percentage of weight
@@ -79,14 +95,13 @@ class BMCombReactionParameterData(ReactionParameterBlock):
         #net calorific value (wet basis) (pg. 7) https://www.mbie.govt.nz/dmsdocument/125-industrial-bioenergy-
         #ncv multiplied by 162 g/mo (cellulose) to convert from /mass to /mol basis.
 
-        dh_rxn_dict = {"R1": -self.ncv} # @ w=9%, h=6% ==> ncv=-2749556.40
+        self.dh_rxn_dict = {"R1": -self.ncv} # @ w=9%, h=6% ==> ncv=-2749556.40
         
-        def dh_rxn(b,reaction_index):
-            # only one reaction index, so we are just setting it to the ncv
-            return -self.ncv
+        def dh_rxn():
+            return self.dh_rxn_dict
 
         self.dh_rxn = Expression(self.rate_reaction_idx, 
-                            rule=dh_rxn,
+                            rule=dh_rxn(),
                             doc="Heat of reaction")
 
     @classmethod

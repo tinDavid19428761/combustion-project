@@ -36,15 +36,15 @@ from idaes.core.util.config import (
 )
 
 # from property_packages.combustion.biomass_combustion_rp import BMCombReactionParameterBlock
-from biomass_combustion_rp import BMCombReactionParameterBlock
+from multi_fuel_rp  import MultiCombReactionParameterBlock
 
 
 
 __author__ = "Chinedu Okoli, Andrew Lee"
 
 
-@declare_process_block_class("StoichiometricReactor")
-class StoichiometricReactorData(UnitModelBlockData):
+@declare_process_block_class("CombustionReactor")
+class CombustionReactorData(UnitModelBlockData):
     """
     Standard Stoichiometric Reactor Unit Model Class
     This model assumes that all given reactions are irreversible, and that each
@@ -183,8 +183,8 @@ see property package for documentation.}""",
             None
         """
         # Call UnitModel.build to setup dynamics
-        super(StoichiometricReactorData, self).build()
-        self.reaction_package = BMCombReactionParameterBlock(property_package=self.config.property_package)
+        super(CombustionReactorData, self).build()
+        self.reaction_package = MultiCombReactionParameterBlock(property_package=self.config.property_package)
         # Build Control Volume
         self.control_volume = ControlVolume0DBlock(
             dynamic=self.config.dynamic,
@@ -231,14 +231,12 @@ see property package for documentation.}""",
 
         #creating conversion variable
         self.conversion = Var(self.reaction_package.rate_reaction_idx ,initialize=1, bounds=(0,1), units="dimensionless")
-        
 
         #add heat loss config option to turn off/on heat loss correlation. (may also need logic for front end state vars implementation?)
         #Q_loss = UAdT
         self.ohtc = Var(initialize=250, units=pyunits.J/pyunits.m**2/pyunits.K/pyunits.s)
         self.surface_area = Var(initialize=0.02, units=pyunits.m**2, doc="casing outer surface area")
         self.surface_temp = Var(initialize=55+273.12, units=pyunits.K, doc="outer skin temperature of boiler")
-        # self.heat_duty = Reference(self.control_volume.heat[:])
 
         @self.Constraint(
                 self.flowsheet().time,
@@ -247,28 +245,21 @@ see property package for documentation.}""",
             return b.heat_duty[0] == (
             b.ohtc*b.surface_area*(-b.outlet.temperature[0]+b.surface_temp))
         
-        
 
-        #for r in reaction_package.rate_reaction_idx, iterate conversion for multiple reactions
         @self.Constraint(
                 self.flowsheet().time,
                 self.reaction_package.rate_reaction_idx)
         def conversion_performance_eqn(b, t, r):
-            # l = self.reaction_package.reactant_list[1] #1 indexes biomass or fuel in property package
             l = self.reaction_package.limit_reactant_dict[r]
             return b.conversion[r] == (
             b.control_volume.rate_reaction_extent[t,r]
              /(b.control_volume.properties_in[t].mole_frac_comp[l]
              *b.control_volume.properties_in[t].flow_mol
             ))
-        
-
-        
 
     def _get_performance_contents(self, time_point=0):
         var_dict = {
-            # "Conversion": self.conversion,
-            "Ash Content": self.reaction_package.rate_reaction_stoichiometry["R1","Sol","ash"],
+            "Ash Content": self.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","ash"],
             "Water Content": self.reaction_package.w,
             "H2 Content": self.reaction_package.h,
             "Heat Duty": self.heat_duty,
