@@ -172,6 +172,31 @@ and used when constructing these,
 see property package for documentation.}""",
         ),
     )
+    CONFIG.declare(
+        "reaction_package",
+        ConfigValue(
+            default=None,
+            domain=is_reaction_parameter_block,
+            description="Reaction package to use for control volume",
+            doc="""Reaction parameter object used to define reaction calculations,
+**default** - None.
+**Valid values:** {
+**None** - no reaction package,
+**ReactionParameterBlock** - a ReactionParameterBlock object.}""",
+        ),
+    )
+    CONFIG.declare(
+        "reaction_package_args",
+        ConfigBlock(
+            implicit=True,
+            description="Arguments to use for constructing reaction packages",
+            doc="""A ConfigBlock with arguments to be passed to a reaction block(s)
+and used when constructing these,
+**default** - None.
+**Valid values:** {
+see reaction package for documentation.}""",
+        ),
+    )
 
 
     def build(self):
@@ -184,13 +209,14 @@ see property package for documentation.}""",
         """
         # Call UnitModel.build to setup dynamics
         super(StoichiometricReactorData, self).build()
-        self.reaction_package = BMCombReactionParameterBlock(property_package=self.config.property_package)
+        # self.reaction_package = BMCombReactionParameterBlock(property_package=self.config.property_package)
         # Build Control Volume
         self.control_volume = ControlVolume0DBlock(
             dynamic=self.config.dynamic,
             property_package=self.config.property_package,
             property_package_args=self.config.property_package_args,
-            reaction_package=self.reaction_package,
+            reaction_package=self.config.reaction_package,
+            reaction_package_args=self.config.reaction_package_args,
         )
 
         self.control_volume.add_state_blocks(has_phase_equilibrium=False)
@@ -212,7 +238,6 @@ see property package for documentation.}""",
             has_pressure_change=self.config.has_pressure_change,
         )
 
-
         # Set references to balance terms at unit level
         if (
             self.config.has_heat_transfer is True
@@ -225,12 +250,13 @@ see property package for documentation.}""",
         ):
             self.deltaP = Reference(self.control_volume.deltaP[:])
 
+        
         # Add Ports
         self.add_inlet_port()
         self.add_outlet_port()
 
         #creating conversion variable
-        self.conversion = Var(self.reaction_package.rate_reaction_idx ,initialize=1, bounds=(0,1), units="dimensionless")
+        self.conversion = Var(self.config.reaction_package.rate_reaction_idx ,initialize=1, bounds=(0,1), units="dimensionless")
 
         #add heat loss config option to turn off/on heat loss correlation. (may also need logic for front end state vars implementation?)
         #Q_loss = UAdT
@@ -238,19 +264,21 @@ see property package for documentation.}""",
         self.surface_area = Var(initialize=0.02, units=pyunits.m**2, doc="casing outer surface area")
         self.surface_temp = Var(initialize=55+273.12, units=pyunits.K, doc="outer skin temperature of boiler")
 
-        @self.Constraint(
-                self.flowsheet().time,
-        )
+        # self.ohtc.fix()
+        self.surface_area.fix()
+        self.surface_temp.fix()
+
+        @self.Constraint(self.flowsheet().time,)
         def heat_loss_eqn(b,t):
             return b.heat_duty[0] == (
             b.ohtc*b.surface_area*(-b.outlet.temperature[0]+b.surface_temp)
             )
-        
+
         @self.Constraint(
                 self.flowsheet().time,
-                self.reaction_package.rate_reaction_idx)
+                self.config.reaction_package.rate_reaction_idx)
         def conversion_performance_eqn(b, t, r):
-            l = self.reaction_package.limit_reactant_dict[r]
+            l = self.config.reaction_package.limit_reactant_dict[r]
             return b.conversion[r] == (
             b.control_volume.rate_reaction_extent[t,r]
              /(b.control_volume.properties_in[t].mole_frac_comp[l]
@@ -259,16 +287,8 @@ see property package for documentation.}""",
         
 
     def _get_performance_contents(self, time_point=0):
-        var_dict = {
-            "Ash Content": self.reaction_package.rate_reaction_stoichiometry["R1","Sol","ash"],
-            "Water Content": self.reaction_package.w,
-            "H2 Content": self.reaction_package.h,
-            "Heat Duty": self.heat_duty,
-            "overall heat transfer coefficient": self.ohtc,
-            "surface area": self.surface_area,
-            "surface temperature": self.surface_temp,
-            }
-        for r in self.reaction_package.rate_reaction_idx:
+        var_dict = {}
+        for r in self.config.reaction_package.rate_reaction_idx:
             var_dict["%s Conversion"%(r)] = self.conversion[r]
         if hasattr(self, "heat_duty"):
             var_dict["Heat Duty"] = self.heat_duty[time_point]

@@ -50,6 +50,8 @@ from idaes.core.util.model_diagnostics import (
 from custom_stoichiometric_reactor import StoichiometricReactor
 import unittest
 
+from biomass_combustion_rp import BMCombReactionParameterBlock
+
 m = ConcreteModel()
 
 m.fs = FlowsheetBlock(dynamic=False)
@@ -61,24 +63,25 @@ m.fs.steam_properties = HelmholtzParameterBlock(
         phase_presentation=PhaseType.LG,
         # state_vars=StateVars.TPX
     )
+m.fs.reaction_params = BMCombReactionParameterBlock(property_package=m.fs.biomass_properties)
 
 m.fs.R101 = StoichiometricReactor(
     property_package = m.fs.biomass_properties,
-    # reaction_package = m.fs.reaction_params,
+    reaction_package = m.fs.reaction_params,
     has_heat_of_reaction=True,
     has_heat_transfer=True, #test with true also
     has_pressure_change=False,
 )
 
 m.fs.R101.conversion["R1"].fix(0.5)
-m.fs.R101.reaction_package.h.fix(0.06) #h and w in dh_rxn calculation
-m.fs.R101.reaction_package.w.fix(0.09)
+m.fs.R101.config.reaction_package.h.fix() #h and w in dh_rxn calculation
+m.fs.R101.config.reaction_package.w.fix()
 
-m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1","Sol","ash"].fix(0.03)
+m.fs.R101.config.reaction_package.rate_reaction_stoichiometry["R1","Sol","ash"].fix()
 
 m.fs.R101.heat_duty[0].fix(-1000) # positive direction is heat flow into the reactor.
-m.fs.R101.surface_area.fix(0.1)
-m.fs.R101.surface_temp.fix(55+273.15)
+# m.fs.R101.surface_area.fix(0.1)
+# m.fs.R101.surface_temp.fix(55+273.15)
 
 #reactor feed stream
 m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.7)
@@ -99,8 +102,8 @@ m.fs.R101.initialize(outlvl=idaeslog.INFO)
 solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)
 m.fs.R101.report()
-print(value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Sol", "ash"]))
-print(value(m.fs.R101.reaction_package.dh_rxn["R1"]))
+print(value(m.fs.R101.config.reaction_package.rate_reaction_stoichiometry["R1", "Sol", "ash"]))
+print(value(m.fs.R101.config.reaction_package.dh_rxn["R1"]))
 
 
 
