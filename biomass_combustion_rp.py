@@ -94,6 +94,8 @@ class BMCombReactionParameterData(ReactionParameterBlock):
         
         self.h=Var(initialize=0.06) #concentration of hydrogen as a percentage of weight, h=6%
         self.w=Var(initialize=0.09) #water content of fuel as percentage of weight
+        self.h.fix()
+        self.w.fix()
         # self.gcv=Param(initialize=20.2, units=pyunits.MJ/pyunits.kg, doc="gross calorific value") #gross calorific value (dry basis)
         self.gcv=Param(initialize=20.2, units=pyunits.MJ/pyunits.kg, doc="gross calorific value") 
         self.ncv = Param(initialize=-(self.gcv*(1-self.w)-2.447*self.w-2.447*self.h*9.01*(1-self.w))*162.1394*1000, units=pyunits.J/pyunits.mol)

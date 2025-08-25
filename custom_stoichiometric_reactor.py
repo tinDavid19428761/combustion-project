@@ -273,6 +273,8 @@ see reaction package for documentation.}""",
             return b.heat_duty[0] == (
             b.ohtc*b.surface_area*(-b.outlet.temperature[0]+b.surface_temp)
             )
+        
+        
 
         @self.Constraint(
                 self.flowsheet().time,
