@@ -48,7 +48,7 @@ from idaes.core.util.model_diagnostics import (
     DiagnosticsToolbox,
 )
 
-from custom_combustion_reactor import CombustionReactor
+from custom_combustion_reactor import MultiCombReactor
 import unittest
 
 m = ConcreteModel()
@@ -62,35 +62,42 @@ m.fs.steam_properties = HelmholtzParameterBlock(
         phase_presentation=PhaseType.LG,
     )
 
-m.fs.R101 = CombustionReactor(
+m.fs.R101 = MultiCombReactor(
     property_package = m.fs.flue_properties,
     # reaction_package = m.fs.reaction_params,
     has_heat_of_reaction=True,
     has_heat_transfer=True, 
     has_pressure_change=False,
+    has_uncombustibles=True
 )
 
 m.fs.R101.conversion["Rbiomass"].fix(0.5)
 m.fs.R101.conversion["RCH4"].fix(1)
 
-m.fs.R101.reaction_package.h.fix(0.06) #h and w in dh_rxn calculation
-m.fs.R101.reaction_package.w.fix(0.09)
+m.fs.R101.hcon.fix(0.06) #h and w in dh_rxn calculation
+# m.fs.R101.wcon.fix(0.09)
+# m.fs.R101.wcon.fix(0.11)
+m.fs.R101.reaction_package.dh_rxn["Rbiomass"].fix(-2.7804e+06)
+# m.fs.R101.ncv.fix(-2749556.40)
 
-m.fs.R101.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","ash"].fix(0.03)
+
+
+# m.fs.R101.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","ash"].fix(0.03)
+m.fs.R101.ash_mass.fix(0.03)
 
 m.fs.R101.heat_duty[0].fix(-000)
 m.fs.R101.surface_area.fix(0.1)
 m.fs.R101.surface_temp.fix(55+273.15)
 
 #reactor feed stream
-m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.19)
-m.fs.R101.inlet.mole_frac_comp[0,"O2"].fix(0.6)
+m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.18)
+m.fs.R101.inlet.mole_frac_comp[0,"O2"].fix(0.8)
 m.fs.R101.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
 m.fs.R101.inlet.mole_frac_comp[0,"H2O"].fix(1e-20) 
 m.fs.R101.inlet.mole_frac_comp[0,"CO"].fix(1e-20) 
 m.fs.R101.inlet.mole_frac_comp[0,"biomass"].fix(0.01) 
 m.fs.R101.inlet.mole_frac_comp[0,"ash"].fix(1e-20)
-m.fs.R101.inlet.mole_frac_comp[0,"CH4"].fix(0.2)
+m.fs.R101.inlet.mole_frac_comp[0,"CH4"].fix(0.01)
 m.fs.R101.inlet.temperature.fix(300)
 m.fs.R101.inlet.pressure.fix(101325)
 m.fs.R101.inlet.flow_mol.fix(40)

@@ -109,21 +109,27 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
             "RCH4": "CH4",
         },
         within=Any)
-        
-        self.h=Var(initialize=0.06) #concentration of hydrogen as a percentage of weight, h=6%
-        self.w=Var(initialize=0.09) #water content of fuel as percentage of weight
-        self.gcv=Param(initialize=20.2, units=pyunits.MJ/pyunits.kg, doc="gross calorific value") 
-        self.ncv = Param(initialize=-(self.gcv*(1-self.w)-2.447*self.w-2.447*self.h*9.01*(1-self.w))*162.1394*1000, units=pyunits.J/pyunits.mol)
+        self.uncombustibles_dict = Param(self.rate_reaction_idx, initialize={
+            "Rbiomass": "ash",
+            "RCH4": None,
+        },
+        within=Any)
 
-        dh_rxn_dict = {
-            "Rbiomass": self.ncv, # @ w=9%, h=6% ==> ncv=-2749556.40
-            "RCH4": -802.6,
-                       }
         
-        self.dh_rxn = Param(self.rate_reaction_idx, 
+
+        dh_rxn_dict = {"Rbiomass": -2749556.40, # @ w=9%, h=6% ==> ncv=-2749556.40 (pg.7): https://www.mbie.govt.nz/dmsdocument/125-industrial-bioenergy-
+                       "RCH4": -802125 # (J/mol) engineering toolbox methane LHV
+                       } 
+        
+        self.dh_rxn = Var(self.rate_reaction_idx, 
                           initialize = dh_rxn_dict,
                           domain=Reals,
                           doc="Heat of reaction")
+        self.dh_rxn.fix()
+
+        
+        
+
     @classmethod
     def define_metadata(cls, obj):
         obj.add_default_units({'time': pyunits.s,

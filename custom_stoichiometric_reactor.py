@@ -268,11 +268,15 @@ see reaction package for documentation.}""",
         self.surface_area.fix()
         self.surface_temp.fix()
 
+        self.dh_rxn = Reference(self.config.reaction_package.dh_rxn)
+
         @self.Constraint(self.flowsheet().time,)
         def heat_loss_eqn(b,t):
-            return b.heat_duty[0] == (
+            return b.heat_duty[t] == (
             b.ohtc*b.surface_area*(-b.outlet.temperature[0]+b.surface_temp)
             )
+        # self.heat_duty[0].fix(-1000)
+
         
         
 
@@ -288,13 +292,13 @@ see reaction package for documentation.}""",
             ))
         
 
-    def _get_performance_contents(self, time_point=0):
-        var_dict = {}
-        for r in self.config.reaction_package.rate_reaction_idx:
-            var_dict["%s Conversion"%(r)] = self.conversion[r]
-        if hasattr(self, "heat_duty"):
-            var_dict["Heat Duty"] = self.heat_duty[time_point]
-        if hasattr(self, "deltaP"):
-            var_dict["Pressure Change"] = self.deltaP[time_point]
+    # def _get_performance_contents(self, time_point=0):
+    #     var_dict = {}
+    #     for r in self.config.reaction_package.rate_reaction_idx:
+    #         var_dict["%s Conversion"%(r)] = self.conversion[r]
+    #     # if hasattr(self, "heat_duty"):
+    #         # var_dict["Heat Duty"] = self.heat_duty[time_point]
+    #     if hasattr(self, "deltaP"):
+    #         var_dict["Pressure Change"] = self.deltaP[time_point]
 
-        return {"vars": var_dict}
+    #     return {"vars": var_dict}

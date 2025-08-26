@@ -37,6 +37,7 @@ from idaes.core.util.config import (
 
 # from property_packages.combustion.biomass_combustion_rp import BMCombReactionParameterBlock
 from multi_fuel_rp  import MultiCombReactionParameterBlock
+from biomass_combustion_rp import BMCombReactionParameterBlock
 
 
 
@@ -171,7 +172,41 @@ and used when constructing these,
 **Valid values:** {
 see property package for documentation.}""",
         ),
+    ),
+    CONFIG.declare(
+        "has_uncombustibles",
+        ConfigValue(
+            default=False,
+            domain=Bool,
+            description="property package has uncombustibles: creates constraint for ash mass content to change "
+        )
     )
+
+#     CONFIG.declare(
+#         "reaction_package",
+#         ConfigValue(
+#             default=None,
+#             domain=is_reaction_parameter_block,
+#             description="Reaction package to use for control volume",
+#             doc="""Reaction parameter object used to define reaction calculations,
+# **default** - None.
+# **Valid values:** {
+# **None** - no reaction package,
+# **ReactionParameterBlock** - a ReactionParameterBlock object.}""",
+#         ),
+#     )
+#     CONFIG.declare(
+#         "reaction_package_args",
+#         ConfigBlock(
+#             implicit=True,
+#             description="Arguments to use for constructing reaction packages",
+#             doc="""A ConfigBlock with arguments to be passed to a reaction block(s)
+# and used when constructing these,
+# **default** - None.
+# **Valid values:** {
+# see reaction package for documentation.}""",
+#         ),
+#     )
 
 
     def build(self):
@@ -238,16 +273,33 @@ see property package for documentation.}""",
         self.surface_area = Var(initialize=0.02, units=pyunits.m**2, doc="casing outer surface area")
         self.surface_temp = Var(initialize=55+273.12, units=pyunits.K, doc="outer skin temperature of boiler")
 
-        self.ash_mass = Var(initialize=0.01, units=pyunits.g/pyunits.g)
-        @self.Constraint()
-        def ash_basis_conversion_eqn(b):
-            return b.ash_mass*(162.1394/66.37) == b.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","ash"]
+
+        if self.config.has_uncombustibles == True:
+            self.ash_mass = Var(initialize=0.01, units=pyunits.g/pyunits.g)
+            self.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","ash"].unfix()
+            @self.Constraint()
+            def ash_basis_conversion_eqn(b):
+                return b.ash_mass*(162.1394/66.37) == b.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","ash"]
+        
+        self.hcon=Var(initialize=0.06) #concentration of hydrogen as a percentage of weight, h=6%
+        self.wcon=Var(initialize=0.09) #water content of fuel as percentage of weight
+        self.gcv=Param(initialize=20.2, units=pyunits.MJ/pyunits.kg, doc="gross calorific value") 
+        
+        #custom constraint for biomass heating value
+        @self.Constraint(
+                self.flowsheet().time
+        )
+        def ncv_eqn(b,t):
+            return b.reaction_package.dh_rxn["Rbiomass"] == (
+                -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000
+            )
+
 
         @self.Constraint(
                 self.flowsheet().time,
         )
         def heat_loss_eqn(b,t):
-            return b.heat_duty[0] == (
+            return b.heat_duty[t] == (
             b.ohtc*b.surface_area*(-b.outlet.temperature[0]+b.surface_temp)
             )
         
@@ -266,12 +318,14 @@ see property package for documentation.}""",
     def _get_performance_contents(self, time_point=0):
         var_dict = {
             "Ash Mass% Content": self.ash_mass,
-            "Water Content": self.reaction_package.w,
-            "H2 Content": self.reaction_package.h,
-            "Heat Duty": self.heat_duty,
-            "overall heat transfer coefficient": self.ohtc,
-            "surface area": self.surface_area,
-            "surface temperature": self.surface_temp,
+            "Water Content": self.wcon,
+            "H2 Content": self.hcon,
+            # "Biomass Calorific value": self.ncv,
+            "BM ncv": self.reaction_package.dh_rxn["Rbiomass"]
+            # "Heat Duty": self.heat_duty,
+            # "overall heat transfer coefficient": self.ohtc,
+            # "surface area": self.surface_area,
+            # "surface temperature": self.surface_temp,
             }
         for r in self.reaction_package.rate_reaction_idx:
             var_dict["%s Conversion"%(r)] = self.conversion[r]

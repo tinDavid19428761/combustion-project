@@ -74,8 +74,8 @@ m.fs.R101 = StoichiometricReactor(
 )
 
 m.fs.R101.conversion["R1"].fix(0.5)
-m.fs.R101.config.reaction_package.h.fix() #h and w in dh_rxn calculation
-m.fs.R101.config.reaction_package.w.fix()
+# m.fs.R101.config.reaction_package.h.fix() #h and w in dh_rxn calculation
+# m.fs.R101.config.reaction_package.w.fix()
 
 m.fs.R101.config.reaction_package.rate_reaction_stoichiometry["R1","Sol","ash"].fix()
 
@@ -104,5 +104,6 @@ status=solver.solve(m,tee=True)
 m.fs.R101.report()
 print(value(m.fs.R101.config.reaction_package.rate_reaction_stoichiometry["R1", "Sol", "ash"]))
 print(value(m.fs.R101.config.reaction_package.dh_rxn["R1"]))
+# m.fs.R101.display()
 
 
