@@ -176,7 +176,7 @@ see property package for documentation.}""",
     CONFIG.declare(
         "has_uncombustibles",
         ConfigValue(
-            default=False,
+            default=True,
             domain=Bool,
             description="property package has uncombustibles: creates constraint for ash mass content to change "
         )
@@ -275,17 +275,21 @@ see property package for documentation.}""",
 
 
         if self.config.has_uncombustibles == True:
-            self.ash_mass = Var(initialize=0.01, units=pyunits.g/pyunits.g)
-            self.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","ash"].unfix()
-            @self.Constraint()
-            def ash_basis_conversion_eqn(b):
-                return b.ash_mass*(162.1394/66.37) == b.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","ash"]
+            self.ash_mass = Var(self.reaction_package.uncombs_set,initialize=0.01, units=pyunits.g/pyunits.g)
+            
+
+            @self.Constraint(
+                    self.reaction_package.uncombs_set,                  
+            )
+            def ash_basis_conversion_eqn(b,u):
+                b.reaction_package.rate_reaction_stoichiometry[u,"Sol","uncombustible"].unfix()
+                return b.ash_mass[u]*(162.1394/66.37) == b.reaction_package.rate_reaction_stoichiometry[u,"Sol","uncombustible"]
         
         self.hcon=Var(initialize=0.06) #concentration of hydrogen as a percentage of weight, h=6%
         self.wcon=Var(initialize=0.09) #water content of fuel as percentage of weight
         self.gcv=Param(initialize=20.2, units=pyunits.MJ/pyunits.kg, doc="gross calorific value") 
         
-        #custom constraint for biomass heating value
+        #custom constraint for biomass heating value [turn into callable method?]
         @self.Constraint(
                 self.flowsheet().time
         )
@@ -315,9 +319,10 @@ see property package for documentation.}""",
             ))
         
 
+
     def _get_performance_contents(self, time_point=0):
         var_dict = {
-            "Ash Mass% Content": self.ash_mass,
+            # "Ash Mass% Content": self.ash_mass,
             "Water Content": self.wcon,
             "H2 Content": self.hcon,
             # "Biomass Calorific value": self.ncv,
@@ -329,6 +334,8 @@ see property package for documentation.}""",
             }
         for r in self.reaction_package.rate_reaction_idx:
             var_dict["%s Conversion"%(r)] = self.conversion[r]
+        for u in self.reaction_package.uncombs_set:
+            var_dict["%s Ash content"%(u)] = self.ash_mass[u]
         if hasattr(self, "heat_duty"):
             var_dict["Heat Duty"] = self.heat_duty[time_point]
         if hasattr(self, "deltaP"):

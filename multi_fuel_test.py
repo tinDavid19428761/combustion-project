@@ -80,10 +80,9 @@ m.fs.R101.hcon.fix(0.06) #h and w in dh_rxn calculation
 m.fs.R101.reaction_package.dh_rxn["Rbiomass"].fix(-2.7804e+06)
 # m.fs.R101.ncv.fix(-2749556.40)
 
+m.fs.R101.ash_mass["Rbiomass"].fix(0.03)
+# m.fs.R101.ash_mass["RCH4"].fix(0.0)
 
-
-# m.fs.R101.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","ash"].fix(0.03)
-m.fs.R101.ash_mass.fix(0.03)
 
 m.fs.R101.heat_duty[0].fix(-000)
 m.fs.R101.surface_area.fix(0.1)
@@ -96,7 +95,7 @@ m.fs.R101.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
 m.fs.R101.inlet.mole_frac_comp[0,"H2O"].fix(1e-20) 
 m.fs.R101.inlet.mole_frac_comp[0,"CO"].fix(1e-20) 
 m.fs.R101.inlet.mole_frac_comp[0,"biomass"].fix(0.01) 
-m.fs.R101.inlet.mole_frac_comp[0,"ash"].fix(1e-20)
+m.fs.R101.inlet.mole_frac_comp[0,"uncombustible"].fix(1e-20)
 m.fs.R101.inlet.mole_frac_comp[0,"CH4"].fix(0.01)
 m.fs.R101.inlet.temperature.fix(300)
 m.fs.R101.inlet.pressure.fix(101325)

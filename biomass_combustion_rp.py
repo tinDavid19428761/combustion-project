@@ -55,7 +55,7 @@ class BMCombReactionParameterData(ReactionParameterBlock):
                                               "CO",
                                               "N2",
                                               "biomass",
-                                              "ash",
+                                              "uncombustible",
                                               "CH4",
                                               ])
 
@@ -68,7 +68,7 @@ class BMCombReactionParameterData(ReactionParameterBlock):
                                             ("R1", "Sol", "biomass"),
                                             ("R1", "Vap", "N2"),
                                             ("R1", "Vap", "CO"),
-                                            ("R1", "Sol", "ash"),
+                                            ("R1", "Sol", "uncombustible"),
                                             ("R1", "Vap", "CH4"),
                                             ])
         # biomass combustion stoichiometry based on cellulose
@@ -79,7 +79,7 @@ class BMCombReactionParameterData(ReactionParameterBlock):
                                             ("R1", "Sol", "biomass"): -1,
                                             ("R1", "Vap", "N2"): 0,
                                             ("R1", "Vap", "CO"): 0,
-                                            ("R1", "Sol", "ash"): 0.01,
+                                            ("R1", "Sol", "uncombustible"): 0.01,
                                             ("R1", "Vap", "CH4"): 0,
                                             })
         self.rate_reaction_stoichiometry.fix()

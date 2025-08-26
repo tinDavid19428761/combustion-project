@@ -55,12 +55,13 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                                               'CO',
                                               'N2',
                                               'biomass',
-                                              'ash',
+                                              'uncombustible',
                                               'CH4'
                                               ])
 
         # Reaction Index
         self.rate_reaction_idx = Set(initialize=["Rbiomass","RCH4"])
+        self.uncombs_set = Set(initialize=["Rbiomass",])
 
         self.reaction_set = Set(initialize=[("Rbiomass", "Vap", "H2O"),
                                             ("Rbiomass", "Vap", "CO2"),
@@ -68,7 +69,7 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                                             ("Rbiomass", "Sol", "biomass"),
                                             ("Rbiomass", "Vap", "N2"),
                                             ("Rbiomass", "Vap", "CO"),
-                                            ("Rbiomass", "Sol", "ash"),
+                                            ("Rbiomass", "Sol", "uncombustible"),
                                             ("Rbiomass", "Vap", "CH4"),
 
                                             ("RCH4", "Vap", "H2O"),
@@ -77,7 +78,7 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                                             ("RCH4", "Sol", "biomass"),
                                             ("RCH4", "Vap", "N2"),
                                             ("RCH4", "Vap", "CO"),
-                                            ("RCH4", "Sol", "ash"),
+                                            ("RCH4", "Sol", "uncombustible"),
                                             ("RCH4", "Vap", "CH4"),
                                             ])
 
@@ -89,7 +90,7 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                                             ("Rbiomass", "Sol", "biomass"): -1,
                                             ("Rbiomass", "Vap", "N2"): 0,
                                             ("Rbiomass", "Vap", "CO"): 0,
-                                            ("Rbiomass", "Sol", "ash"): 0.01, #self.ash_content
+                                            ("Rbiomass", "Sol", "uncombustible"): 0.01,
                                             ("Rbiomass", "Vap", "CH4"): 0,
 
                                             ("RCH4", "Vap", "H2O"): 2,
@@ -98,7 +99,7 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                                             ("RCH4", "Sol", "biomass"): 0,
                                             ("RCH4", "Vap", "N2"): 0,
                                             ("RCH4", "Vap", "CO"): 0,
-                                            ("RCH4", "Sol", "ash"): 0,
+                                            ("RCH4", "Sol", "uncombustible"): 0,
                                             ("RCH4", "Vap", "CH4"): -1,
                                             })
         self.rate_reaction_stoichiometry.fix()
@@ -109,11 +110,14 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
             "RCH4": "CH4",
         },
         within=Any)
-        self.uncombustibles_dict = Param(self.rate_reaction_idx, initialize={
-            "Rbiomass": "ash",
-            "RCH4": None,
-        },
-        within=Any)
+
+        
+
+        # self.uncombustibles_dict = Param(self.rate_reaction_idx, initialize={
+        #     "Rbiomass": ["Sol","uncombustible"],
+        #     "RCH4": ["Sol","uncombustible"],
+        # },
+        # within=Any)
 
         
 
