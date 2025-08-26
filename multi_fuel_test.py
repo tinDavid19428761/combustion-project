@@ -67,21 +67,25 @@ m.fs.R101 = MultiCombReactor(
     # reaction_package = m.fs.reaction_params,
     has_heat_of_reaction=True,
     has_heat_transfer=True, 
-    has_pressure_change=False,
-    has_uncombustibles=True
+    has_pressure_change=False
 )
 
-m.fs.R101.conversion["Rbiomass"].fix(0.5)
-m.fs.R101.conversion["RCH4"].fix(1)
+# m.fs.R101.conversion["Rbiomass"].fix(0.5)
+# m.fs.R101.conversion["RCH4"].fix(1)
+m.fs.R101.conversion_Rbiomass.fix(0.5)
+m.fs.R101.conversion_RCH4.fix(1)
 
 m.fs.R101.hcon.fix(0.06) #h and w in dh_rxn calculation
-# m.fs.R101.wcon.fix(0.09)
+m.fs.R101.wcon.fix(0.09)
 # m.fs.R101.wcon.fix(0.11)
-m.fs.R101.reaction_package.dh_rxn["Rbiomass"].fix(-2.7804e+06)
+# m.fs.R101.reaction_package.dh_rxn["Rbiomass"].fix(-2.7804e+06)
+# m.fs.R101.dh_rxn_Rbiomass.fix(-2.7804e+06)
+# m.fs.R101.reaction_package.dh_rxn["Rbiomass"].unfix()
 # m.fs.R101.ncv.fix(-2749556.40)
 
-m.fs.R101.ash_mass["Rbiomass"].fix(0.03)
+# m.fs.R101.ash_mass["Rbiomass"].fix(0.03)
 # m.fs.R101.ash_mass["RCH4"].fix(0.0)
+m.fs.R101.ash_mass_Rbiomass.fix(0.03)
 
 
 m.fs.R101.heat_duty[0].fix(-000)
@@ -107,3 +111,4 @@ m.fs.R101.initialize(outlvl=idaeslog.INFO)
 solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)
 m.fs.R101.report()
+# m.fs.R101.display()

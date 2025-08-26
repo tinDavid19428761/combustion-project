@@ -172,14 +172,6 @@ and used when constructing these,
 **Valid values:** {
 see property package for documentation.}""",
         ),
-    ),
-    CONFIG.declare(
-        "has_uncombustibles",
-        ConfigValue(
-            default=True,
-            domain=Bool,
-            description="property package has uncombustibles: creates constraint for ash mass content to change "
-        )
     )
 
 #     CONFIG.declare(
@@ -265,7 +257,7 @@ see property package for documentation.}""",
         self.add_outlet_port()
 
         #creating conversion variable
-        self.conversion = Var(self.reaction_package.rate_reaction_idx ,initialize=1, bounds=(0,1), units="dimensionless")
+        
 
         #add heat loss config option to turn off/on heat loss correlation. (may also need logic for front end state vars implementation?)
         #Q_loss = UAdT
@@ -273,46 +265,54 @@ see property package for documentation.}""",
         self.surface_area = Var(initialize=0.02, units=pyunits.m**2, doc="casing outer surface area")
         self.surface_temp = Var(initialize=55+273.12, units=pyunits.K, doc="outer skin temperature of boiler")
 
-
-        if self.config.has_uncombustibles == True:
-            self.ash_mass = Var(self.reaction_package.uncombs_set,initialize=0.01, units=pyunits.g/pyunits.g)
             
-
-            @self.Constraint(
-                    self.reaction_package.uncombs_set,                  
-            )
-            def ash_basis_conversion_eqn(b,u):
-                b.reaction_package.rate_reaction_stoichiometry[u,"Sol","uncombustible"].unfix()
-                return b.ash_mass[u]*(162.1394/66.37) == b.reaction_package.rate_reaction_stoichiometry[u,"Sol","uncombustible"]
-        
         self.hcon=Var(initialize=0.06) #concentration of hydrogen as a percentage of weight, h=6%
         self.wcon=Var(initialize=0.09) #water content of fuel as percentage of weight
         self.gcv=Param(initialize=20.2, units=pyunits.MJ/pyunits.kg, doc="gross calorific value") 
+
+        #alternate build for conversion:
+        # self.conversion = Var(self.reaction_package.rate_reaction_idx ,initialize=1, bounds=(0,1), units="dimensionless")
+        for r in self.reaction_package.rate_reaction_idx:
+            setattr(self,f"conversion_{r}", Var(initialize=1,bounds=(0,1), units="dimensionless"))
+            setattr(self,f"dh_rxn_{r}", Var(initialize=1000000, units=pyunits.J/pyunits.mol))   
+
+
+        # self.ash_mass = Var(self.reaction_package.uncombs_set,initialize=0.01, units=pyunits.g/pyunits.g)
+        for u in self.reaction_package.uncombs_set:
+            setattr(self,f"ash_mass_{u}", Var(initialize=0.01, units=pyunits.g/pyunits.g))
+
+
+        @self.Constraint(self.reaction_package.uncombs_set,)
+        def ash_mass_mole_eqn(b,u):
+            b.reaction_package.rate_reaction_stoichiometry[u,"Sol","uncombustible"].unfix()
+            return getattr(b, f"ash_mass_{u}")*(162.1394/66.37) == b.reaction_package.rate_reaction_stoichiometry[u,"Sol","uncombustible"]
         
-        #custom constraint for biomass heating value [turn into callable method?]
-        @self.Constraint(
-                self.flowsheet().time
-        )
-        def ncv_eqn(b,t):
-            return b.reaction_package.dh_rxn["Rbiomass"] == (
+
+        @self.Constraint(self.reaction_package.rate_reaction_idx)
+        def dh_rxn_link(b,r):
+            return getattr(b,f"dh_rxn_{r}") == b.reaction_package.dh_rxn[r]
+
+        #hard coded constraint just for biomassbiomass heating value [turn into callable method?]
+        @self.Constraint()
+        def ncv_eqn(b):
+            b.reaction_package.dh_rxn["Rbiomass"].unfix()
+            return b.dh_rxn_Rbiomass == (
                 -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000
             )
-
-
-        @self.Constraint(
-                self.flowsheet().time,
-        )
+        
+        @self.Constraint(self.flowsheet().time,)
         def heat_loss_eqn(b,t):
             return b.heat_duty[t] == (
             b.ohtc*b.surface_area*(-b.outlet.temperature[0]+b.surface_temp)
             )
-        
+
+
         @self.Constraint(
                 self.flowsheet().time,
                 self.reaction_package.rate_reaction_idx)
         def conversion_performance_eqn(b, t, r):
             l = self.reaction_package.limit_reactant_dict[r]
-            return b.conversion[r] == (
+            return getattr(b, f"conversion_{r}") == (
             b.control_volume.rate_reaction_extent[t,r]
              /(b.control_volume.properties_in[t].mole_frac_comp[l]
              *b.control_volume.properties_in[t].flow_mol
@@ -323,19 +323,20 @@ see property package for documentation.}""",
     def _get_performance_contents(self, time_point=0):
         var_dict = {
             # "Ash Mass% Content": self.ash_mass,
-            "Water Content": self.wcon,
-            "H2 Content": self.hcon,
+            # "Water Content": self.wcon,
+            # "H2 Content": self.hcon,
             # "Biomass Calorific value": self.ncv,
-            "BM ncv": self.reaction_package.dh_rxn["Rbiomass"]
+            # "BM ncv": self.dh_rxn_Rbiomass
             # "Heat Duty": self.heat_duty,
             # "overall heat transfer coefficient": self.ohtc,
             # "surface area": self.surface_area,
             # "surface temperature": self.surface_temp,
             }
         for r in self.reaction_package.rate_reaction_idx:
-            var_dict["%s Conversion"%(r)] = self.conversion[r]
+            var_dict["%s Conversion"%(r)] = getattr(self,f"conversion_{r}")
+            var_dict["%s dh_rxn"%(r)] = getattr(self, f"dh_rxn_{r}")
         for u in self.reaction_package.uncombs_set:
-            var_dict["%s Ash content"%(u)] = self.ash_mass[u]
+            var_dict["%s Ash content"%(u)] = getattr(self,f"ash_mass_{u}")
         if hasattr(self, "heat_duty"):
             var_dict["Heat Duty"] = self.heat_duty[time_point]
         if hasattr(self, "deltaP"):

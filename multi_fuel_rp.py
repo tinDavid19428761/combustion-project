@@ -62,7 +62,7 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
         # Reaction Index
         self.rate_reaction_idx = Set(initialize=["Rbiomass","RCH4"])
         self.uncombs_set = Set(initialize=["Rbiomass",])
-
+    
         self.reaction_set = Set(initialize=[("Rbiomass", "Vap", "H2O"),
                                             ("Rbiomass", "Vap", "CO2"),
                                             ("Rbiomass", "Vap", "O2"),
@@ -90,7 +90,7 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                                             ("Rbiomass", "Sol", "biomass"): -1,
                                             ("Rbiomass", "Vap", "N2"): 0,
                                             ("Rbiomass", "Vap", "CO"): 0,
-                                            ("Rbiomass", "Sol", "uncombustible"): 0.01,
+                                            ("Rbiomass", "Sol", "uncombustible"): 0,
                                             ("Rbiomass", "Vap", "CH4"): 0,
 
                                             ("RCH4", "Vap", "H2O"): 2,
@@ -111,16 +111,6 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
         },
         within=Any)
 
-        
-
-        # self.uncombustibles_dict = Param(self.rate_reaction_idx, initialize={
-        #     "Rbiomass": ["Sol","uncombustible"],
-        #     "RCH4": ["Sol","uncombustible"],
-        # },
-        # within=Any)
-
-        
-
         dh_rxn_dict = {"Rbiomass": -2749556.40, # @ w=9%, h=6% ==> ncv=-2749556.40 (pg.7): https://www.mbie.govt.nz/dmsdocument/125-industrial-bioenergy-
                        "RCH4": -802125 # (J/mol) engineering toolbox methane LHV
                        } 
@@ -128,7 +118,8 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
         self.dh_rxn = Var(self.rate_reaction_idx, 
                           initialize = dh_rxn_dict,
                           domain=Reals,
-                          doc="Heat of reaction")
+                          doc="Heat of reaction",
+                          units=pyunits.J/pyunits.mol)
         self.dh_rxn.fix()
 
         
