@@ -36,8 +36,9 @@ from idaes.core.util.config import (
 )
 
 # from property_packages.combustion.biomass_combustion_rp import BMCombReactionParameterBlock
-from multi_fuel_rp  import MultiCombReactionParameterBlock
-from biomass_combustion_rp import BMCombReactionParameterBlock
+# from multi_fuel_rp  import MultiCombReactionParameterBlock
+from bl_gas_comb_rp import MultiCombReactionParameterBlock
+# from biomass_combustion_rp import BMCombReactionParameterBlock
 
 
 
@@ -266,9 +267,9 @@ see property package for documentation.}""",
         self.surface_temp = Var(initialize=55+273.12, units=pyunits.K, doc="outer skin temperature of boiler")
 
             
-        self.hcon=Var(initialize=0.06) #concentration of hydrogen as a percentage of weight, h=6%
-        self.wcon=Var(initialize=0.09) #water content of fuel as percentage of weight
-        self.gcv=Param(initialize=20.2, units=pyunits.MJ/pyunits.kg, doc="gross calorific value") 
+        # self.hcon=Var(initialize=0.06) #concentration of hydrogen as a percentage of weight, h=6%
+        # self.wcon=Var(initialize=0.09) #water content of fuel as percentage of weight
+        # self.gcv=Param(initialize=20.2, units=pyunits.MJ/pyunits.kg, doc="gross calorific value") 
 
         #alternate build for conversion:
         # self.conversion = Var(self.reaction_package.rate_reaction_idx ,initialize=1, bounds=(0,1), units="dimensionless")
@@ -296,11 +297,11 @@ see property package for documentation.}""",
             return getattr(b,f"dh_rxn_{r}") == b.reaction_package.dh_rxn[r]
 
         #hard coded constraint just for biomassbiomass heating value [turn into callable method?]
-        @self.Constraint()
-        def ncv_eqn(b):
-            return b.dh_rxn_Rbiomass == (
-                -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000
-            )
+        # @self.Constraint()
+        # def ncv_eqn(b):
+        #     return b.dh_rxn_Rbiomass == (
+        #         -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000
+        #     )
         
         @self.Constraint(self.flowsheet().time,)
         def heat_loss_eqn(b,t):
