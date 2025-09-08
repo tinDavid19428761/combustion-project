@@ -84,7 +84,7 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                                             ("Rbl", "Vap", "H2O"): 5*0.7+(1-0.7), #solids content estimated as cellulose organic matter 
                                             ("Rbl", "Vap", "CO2"): 6*0.7,         #(note water has +0.3 to account for existing water in black Vapuor)
                                             ("Rbl", "Vap", "O2"): -6*0.7,
-                                            ("Rbl", "Sol", "BL"): -1,
+                                            ("Rbl", "Sol", "BL"): -1,   #udpate stoichiometry to reflect nominal air/fuel ratio for black liquor
                                             ("Rbl", "Vap", "N2"): 0,
                                             ("Rbl", "Sol", "uncombustible"): 0.3*0.7,
                                             ("Rbl", "Vap", "CH4"): 0,

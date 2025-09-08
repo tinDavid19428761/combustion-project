@@ -94,25 +94,15 @@ m.fs.R101 = MultiCombReactor(
 )
 
 m.fs.H101 = Heater(
-    property_package = m.fs.bl_properties,
+    # property_package = m.fs.bl_properties,
+    property_package = m.fs.steam_properties,
 
 )
-
-
-
-
-
 
 
 m.fs.R101.conversion_Rbl.fix(1)
 m.fs.R101.conversion_RCH4.fix(0)
 
-# m.fs.R101.hcon.fix(0.06) #h and w in dh_rxn calculation
-# m.fs.R101.wcon.fix(0.09)
-# m.fs.R101.wcon.fix(0.11)
-# m.fs.R101.reaction_package.dh_rxn["Rbiomass"].fix(-2.7804e+06)
-
-# m.fs.R101.dh_rxn_Rbiomass.fix(-2.7804e+06)
 m.fs.R101.dh_rxn_RCH4.fix(-802125) #must fix with actual numbers not just .fix()
 m.fs.R101.dh_rxn_Rbl.fix(-135150)
 
