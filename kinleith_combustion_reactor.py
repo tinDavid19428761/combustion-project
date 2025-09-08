@@ -325,8 +325,8 @@ see property package for documentation.}""",
 
     def _get_performance_contents(self, time_point=0):
         var_dict = {
-            "Water Content": self.wcon,
-            "H2 Content": self.hcon,
+            # "Water Content": self.wcon,
+            # "H2 Content": self.hcon,
             # "Biomass Calorific value": self.ncv,
             # "BM ncv": self.dh_rxn_Rbiomass
             # "overall heat transfer coefficient": self.ohtc,

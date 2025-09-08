@@ -86,7 +86,7 @@ m.fs.R101 = MultiCombReactor(
 
 # m.fs.R101.conversion["Rbl"].fix(0.5)
 # m.fs.R101.conversion["RCH4"].fix(1)
-m.fs.R101.conversion_Rbl.fix(0.5)
+m.fs.R101.conversion_Rbl.fix(1)
 m.fs.R101.conversion_RCH4.fix(0)
 
 # m.fs.R101.hcon.fix(0.06) #h and w in dh_rxn calculation
@@ -95,8 +95,8 @@ m.fs.R101.conversion_RCH4.fix(0)
 # m.fs.R101.reaction_package.dh_rxn["Rbiomass"].fix(-2.7804e+06)
 
 # m.fs.R101.dh_rxn_Rbiomass.fix(-2.7804e+06)
-m.fs.R101.dh_rxn_RCH4.fix()
-m.fs.R101.dh_rxn_Rbl.fix()
+m.fs.R101.dh_rxn_RCH4.fix(-802125) #must fix with actual numbers not just .fix()
+m.fs.R101.dh_rxn_Rbl.fix(-135150)
 
 
 # m.fs.R101.reaction_package.dh_rxn["Rbiomass"].unfix()
@@ -104,7 +104,7 @@ m.fs.R101.dh_rxn_Rbl.fix()
 
 # m.fs.R101.ash_mass["Rbiomass"].fix(0.03)
 # m.fs.R101.ash_mass["RCH4"].fix(0.0)
-m.fs.R101.ash_mass_Rbl.fix(0.03)
+m.fs.R101.ash_mass_Rbl.fix(0.0)
 
 
 m.fs.R101.heat_duty[0].fix(-000)
@@ -112,22 +112,22 @@ m.fs.R101.surface_area.fix(0.1)
 m.fs.R101.surface_temp.fix(55+273.15)
 
 # #reactor feed stream
-m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.18)
+m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.15)
 m.fs.R101.inlet.mole_frac_comp[0,"O2"].fix(0.8)
 m.fs.R101.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
 m.fs.R101.inlet.mole_frac_comp[0,"H2O"].fix(1e-20) 
 # m.fs.R101.inlet.mole_frac_comp[0,"CO"].fix(1e-20) 
-m.fs.R101.inlet.mole_frac_comp[0,"BL"].fix(0.01) 
+m.fs.R101.inlet.mole_frac_comp[0,"BL"].fix(0.05) 
 m.fs.R101.inlet.mole_frac_comp[0,"uncombustible"].fix(1e-20)
 m.fs.R101.inlet.mole_frac_comp[0,"CH4"].fix(1e-20)
-m.fs.R101.inlet.temperature.fix(600)   #issue when temp is too low, initialization error. less Black liquid comp helps this (issue with solids/liquids?)
+m.fs.R101.inlet.temperature.fix(300)  
 m.fs.R101.inlet.pressure.fix(101325)
 m.fs.R101.inlet.flow_mol.fix(10)
 
 print(degrees_of_freedom(m))
 assert degrees_of_freedom(m) == 0
 m.fs.R101.initialize(outlvl=idaeslog.INFO)
-# solver=SolverFactory("ipopt")
-# status=solver.solve(m,tee=True)
-# m.fs.R101.report()
+solver=SolverFactory("ipopt")
+status=solver.solve(m,tee=True)
+m.fs.R101.report()
 # m.fs.R101.display()
