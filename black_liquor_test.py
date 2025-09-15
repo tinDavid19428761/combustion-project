@@ -49,7 +49,7 @@ from idaes.models.unit_models.separator import SplittingType, EnergySplittingTyp
 from idaes.core.util.model_diagnostics import (
     DiagnosticsToolbox,
 )
-from kinleith_combustion_reactor import MultiCombReactor #has rxn pkg included
+from bl_combustion_reactor import MultiCombReactor #has rxn pkg included
 
 # from custom_combustion_reactor import MultiCombReactor
 import unittest

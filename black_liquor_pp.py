@@ -59,7 +59,7 @@ configuration = {
             'valid_phase_types': PT.solidPhase,
             "parameter_data": {
                 "mw": (18.02, pyunits.g / pyunits.mol),  # water
-                "cp_mol_sol_comp_coeff": (75.5, pyunits.J/pyunits.mol/pyunits.K), #approx as water
+                "cp_mol_sol_comp_coeff": (100, pyunits.J/pyunits.mol/pyunits.K), #approx as water
                 "dens_mol_sol_comp_coeff": (76471.01, pyunits.mol/pyunits.m**3),
                 "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),  
                 # "bl_solids": (0.7, pyunits.g/pyunits.g) # for density and enthalpy calcs
@@ -74,8 +74,9 @@ configuration = {
             "dens_mol_sol_comp": ConstantProperties.Constant,
             'valid_phase_types': PT.solidPhase,
             "parameter_data": {
-                "mw": (66.37, pyunits.g / pyunits.mol),
-                "cp_mol_sol_comp_coeff": (68.27, pyunits.J/pyunits.mol/pyunits.K), #Cp weighted average by composition of constituents
+                "mw": (66.37, pyunits.g / pyunits.mol), 
+                # "cp_mol_sol_comp_coeff": (68.27, pyunits.J/pyunits.mol/pyunits.K), #Cp weighted average by composition of biomass non-volatile constituents
+                "cp_mol_sol_comp_coeff": (100, pyunits.J/pyunits.mol/pyunits.K), #based on Na2CO3/lignin
                 "dens_mol_sol_comp_coeff": (2960.415544, pyunits.mol/pyunits.m**3), #ignore
                 "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),          #ignore
                 "enrt_mol_form_sol_comp_ref": (158.1, pyunits.J/pyunits.mol/pyunits.K), #ignoer

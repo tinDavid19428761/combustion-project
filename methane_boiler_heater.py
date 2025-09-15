@@ -154,10 +154,12 @@ m.fs.R101.extent_R1[0.0].fix(extentCO2)
 m.fs.R101.extent_R2[0.0].fix(extentCO) 
 m.fs.R101.outlet.temperature.fix(1099.9)
 
-m.fs.R101.initialize()
+m.fs.R101.initialize(outlvl=idaeslog.INFO)
 #solve reactor
 solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)
+
+#_______________________
 
 #steam generation specification
 steam_pressure = 101325

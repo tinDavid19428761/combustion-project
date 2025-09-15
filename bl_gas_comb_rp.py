@@ -81,12 +81,12 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
 
         # Reaction Stoichiometry
         self.rate_reaction_stoichiometry = Var(self.reaction_set, initialize={
-                                            ("Rbl", "Vap", "H2O"): 5*0.7+(1-0.7), #solids content estimated as cellulose organic matter 
-                                            ("Rbl", "Vap", "CO2"): 6*0.7,         #(note water has +0.3 to account for existing water in black Vapuor)
-                                            ("Rbl", "Vap", "O2"): -6*0.7,
-                                            ("Rbl", "Sol", "BL"): -1,   #udpate stoichiometry to reflect nominal air/fuel ratio for black liquor
+                                            ("Rbl", "Vap", "H2O"): 1-0.7-(0.875*0.3), # carryover water subtract(H2O consumed based on Co2 emit.)
+                                            ("Rbl", "Vap", "CO2"): 0.3, #based on assumed black liquor emissions factor of 95.3 CO2/GJ         
+                                            ("Rbl", "Vap", "O2"): -0.3+(0.15*0.875), #0.3 based on Co2 emit. add(Oxygen supplied by H2O)
+                                            ("Rbl", "Sol", "BL"): -1,   
                                             ("Rbl", "Vap", "N2"): 0,
-                                            ("Rbl", "Sol", "uncombustible"): 0.3*0.7,
+                                            ("Rbl", "Sol", "uncombustible"): 0.7-0.3, #assume solids are retained
                                             ("Rbl", "Vap", "CH4"): 0,
 
                                             ("RCH4", "Vap", "H2O"): 2,
@@ -106,7 +106,7 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
         },
         within=Any)
 
-        dh_rxn_dict = {"Rbl": -135150, # @ w=9%, h=6% ==> ncv=-2749556.40 (pg.7): https://www.mbie.govt.nz/dmsdocument/125-industrial-bioenergy-
+        dh_rxn_dict = {"Rbl": -135150, #
                        "RCH4": -802125 # (J/mol) engineering toolbox methane LHV
                        } 
         

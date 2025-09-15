@@ -262,9 +262,9 @@ see property package for documentation.}""",
 
         #add heat loss config option to turn off/on heat loss correlation. (may also need logic for front end state vars implementation?)
         #Q_loss = UAdT
-        self.ohtc = Var(initialize=250, units=pyunits.J/pyunits.m**2/pyunits.K/pyunits.s)
-        self.surface_area = Var(initialize=0.02, units=pyunits.m**2, doc="casing outer surface area")
-        self.surface_temp = Var(initialize=55+273.12, units=pyunits.K, doc="outer skin temperature of boiler")
+        # self.ohtc = Var(initialize=250, units=pyunits.J/pyunits.m**2/pyunits.K/pyunits.s)
+        # self.surface_area = Var(initialize=0.02, units=pyunits.m**2, doc="casing outer surface area")
+        # self.surface_temp = Var(initialize=55+273.12, units=pyunits.K, doc="outer skin temperature of boiler")
 
             
         # self.hcon=Var(initialize=0.06) #concentration of hydrogen as a percentage of weight, h=6%
@@ -279,17 +279,17 @@ see property package for documentation.}""",
 
 
         # self.ash_mass = Var(self.reaction_package.uncombs_set,initialize=0.01, units=pyunits.g/pyunits.g)
-        for u in self.reaction_package.uncombs_set:
-            setattr(self,f"ash_mass_{u}", Var(initialize=0.01, units=pyunits.g/pyunits.g))
+        # for u in self.reaction_package.uncombs_set:
+        #     setattr(self,f"ash_mass_{u}", Var(initialize=0.01, units=pyunits.g/pyunits.g))
 
 
 
         """ #new constraints: returns getattr for setattr variables """
 
-        @self.Constraint(self.reaction_package.uncombs_set,)
-        def ash_mass_mole_eqn(b,u):
-            b.reaction_package.rate_reaction_stoichiometry[u,"Sol","uncombustible"].unfix()
-            return getattr(b, f"ash_mass_{u}")*(162.1394/66.37) == b.reaction_package.rate_reaction_stoichiometry[u,"Sol","uncombustible"]
+        # @self.Constraint(self.reaction_package.uncombs_set,)
+        # def ash_mass_mole_eqn(b,u):
+        #     b.reaction_package.rate_reaction_stoichiometry[u,"Sol","uncombustible"].unfix()
+        #     return getattr(b, f"ash_mass_{u}")*(162.1394/66.37) == b.reaction_package.rate_reaction_stoichiometry[u,"Sol","uncombustible"]
         
         @self.Constraint(self.reaction_package.rate_reaction_idx)
         def dh_rxn_link(b,r):
@@ -303,11 +303,11 @@ see property package for documentation.}""",
         #         -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000
         #     )
         
-        @self.Constraint(self.flowsheet().time,)
-        def heat_loss_eqn(b,t):
-            return b.heat_duty[t] == (
-            b.ohtc*b.surface_area*(-b.outlet.temperature[0]+b.surface_temp)
-            )
+        # @self.Constraint(self.flowsheet().time,)
+        # def heat_loss_eqn(b,t):
+        #     return b.heat_duty[t] == (
+        #     b.ohtc*b.surface_area*(-b.outlet.temperature[0]+b.surface_temp)
+        #     )
 
 
         @self.Constraint(
@@ -336,8 +336,8 @@ see property package for documentation.}""",
         for r in self.reaction_package.rate_reaction_idx:
             var_dict["%s Conversion"%(r)] = getattr(self,f"conversion_{r}")
             var_dict["%s dh_rxn"%(r)] = getattr(self, f"dh_rxn_{r}")
-        for u in self.reaction_package.uncombs_set:
-            var_dict["%s Ash content"%(u)] = getattr(self,f"ash_mass_{u}")
+        # for u in self.reaction_package.uncombs_set:
+        #     var_dict["%s Ash content"%(u)] = getattr(self,f"ash_mass_{u}")
         if hasattr(self, "heat_duty"):
             var_dict["Heat Duty"] = self.heat_duty[time_point]
         if hasattr(self, "deltaP"):
