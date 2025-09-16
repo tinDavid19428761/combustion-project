@@ -119,8 +119,8 @@ configuration = {
             'valid_phase_types': PT.vaporPhase,
             "parameter_data": {
                 "mw": (16.0425, pyunits.g / pyunits.mol),  # [4]
-                "pressure_crit": (46.1e5, pyunits.Pa),  # [[4]
-                "temperature_crit": (190.6, pyunits.K),  # [4]
+                # "pressure_crit": (46.1e5, pyunits.Pa),  # [[4]
+                # "temperature_crit": (190.6, pyunits.K),  # [4]
                 "cp_mol_ig_comp_coeff": { #valid range 298 K - 1300 K
                     "A": (-0.703029	, pyunits.J / pyunits.mol / pyunits.K),  # [4]
                     "B": (108.4773, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),

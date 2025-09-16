@@ -115,8 +115,19 @@ f = {
     "gas_flow": 0.1717
 }
 
-fuel_total = f["bl_flow"]+f["gas_flow"]
-ar = f["air_flow"]/(f["bl_flow"]+f["air_flow"])
+flow_total = f["bl_flow"]+f["gas_flow"]+f["air_flow"]
+ar = f["air_flow"]/(flow_total)
+
+m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.79*ar)
+m.fs.R101.inlet.mole_frac_comp[0,"O2"].fix(0.21*ar)
+m.fs.R101.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
+m.fs.R101.inlet.mole_frac_comp[0,"H2O"].fix(1e-20)
+m.fs.R101.inlet.mole_frac_comp[0,"BL"].fix(f["bl_flow"]/flow_total)
+m.fs.R101.inlet.mole_frac_comp[0,"uncombustible"].fix(1e-20)
+m.fs.R101.inlet.mole_frac_comp[0,"CH4"].fix(f["gas_flow"]/flow_total)
+m.fs.R101.inlet.temperature.fix(100+273.15) #guess, switch to mixer for more accurate
+m.fs.R101.inlet.pressure.fix(101325) #
+m.fs.R101.inlet.flow_mol.fix(flow_total/10)
 
 # #air stream
 # m.fs.mix.air.mole_frac_comp[0,"N2"].fix(0.79)
@@ -144,16 +155,7 @@ ar = f["air_flow"]/(f["bl_flow"]+f["air_flow"])
 # m.fs.mix.fuel.pressure.fix(101325)
 # m.fs.mix.fuel.flow_mol.fix(fuel_total/10)
 
-m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.79*ar)
-m.fs.R101.inlet.mole_frac_comp[0,"O2"].fix(0.21*ar)
-m.fs.R101.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
-m.fs.R101.inlet.mole_frac_comp[0,"H2O"].fix(1e-20)
-m.fs.R101.inlet.mole_frac_comp[0,"BL"].fix(1-ar)
-m.fs.R101.inlet.mole_frac_comp[0,"uncombustible"].fix(1e-20)
-m.fs.R101.inlet.mole_frac_comp[0,"CH4"].fix(1e-20)
-m.fs.R101.inlet.temperature.fix(100+273.15) #guess, switch to mixer for more accurate
-m.fs.R101.inlet.pressure.fix(101325) #
-m.fs.R101.inlet.flow_mol.fix((f["air_flow"]+f["bl_flow"])/10)
+
 
 m.fs.R101.conversion_Rbl.fix(1)
 m.fs.R101.conversion_RCH4.fix(0)
@@ -174,22 +176,6 @@ m.fs.H101.inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=30
 m.fs.H101.inlet.pressure.fix(101325)
 
 m.fs.H101.outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=(400+273.15)*pyunits.K))
-
-
-# def heating_rule(b,c,t):
-#     return b.heat_duty[t] == -c.heat_duty[t]
-
-# m.fs.H101.heat_transfer = Constraint(
-#     m.fs.R101,m.fs.time,
-#     rule=heating_rule
-# )
-
-
-
-
-# m.fs.H101.initialize(outlvl=idaeslog.INFO)
-
-# m.fs.H101.inlet.flow_mol.unfix()
 
 
 
