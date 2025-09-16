@@ -94,8 +94,6 @@ configuration = {
             'valid_phase_types': PT.vaporPhase,
             "parameter_data": {
                 "mw": (31.9988, pyunits.g / pyunits.mol),  # [4]
-                "pressure_crit": (50.43e5, pyunits.Pa),  # [8]
-                "temperature_crit": (154.58, pyunits.K),  # [8]
                 "cp_mol_ig_comp_coeff": { # valid range 100 K - 700 K
                     "A": (30.03235	, pyunits.J / pyunits.mol / pyunits.K),  # [4] #valid range  700-2000
                     "B": (8.772972, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),
@@ -119,8 +117,6 @@ configuration = {
             'valid_phase_types': PT.vaporPhase,
             "parameter_data": {
                 "mw": (16.0425, pyunits.g / pyunits.mol),  # [4]
-                # "pressure_crit": (46.1e5, pyunits.Pa),  # [[4]
-                # "temperature_crit": (190.6, pyunits.K),  # [4]
                 "cp_mol_ig_comp_coeff": { #valid range 298 K - 1300 K
                     "A": (-0.703029	, pyunits.J / pyunits.mol / pyunits.K),  # [4]
                     "B": (108.4773, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),
@@ -144,8 +140,6 @@ configuration = {
             'valid_phase_types': PT.vaporPhase,
             "parameter_data": {
                 "mw": (44.0095, pyunits.g / pyunits.mol),  # [4]
-                "pressure_crit": (73.80e5, pyunits.Pa),  # [[6]
-                "temperature_crit": (304.18, pyunits.K),  # [6]
                 "cp_mol_ig_comp_coeff": { #valid range 298 K - 1200 K
                     "A": (24.99735	, pyunits.J / pyunits.mol / pyunits.K),  # [4]
                     "B": (55.18696, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),
@@ -172,8 +166,6 @@ configuration = {
            'valid_phase_types': PT.vaporPhase,
            "parameter_data": {
                "mw": (18.0153e-3, pyunits.kg / pyunits.mol),  # [4]
-               "pressure_crit": (220.64e5, pyunits.Pa),  # [4]
-               "temperature_crit": (647, pyunits.K),  # [4]
                "cp_mol_ig_comp_coeff": { #valid range 500 K- 1700 K
                    "A": (30.09200,pyunits.J / pyunits.mol / pyunits.K,),  # [4] 
                    "B": (6.832514,pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1,),
@@ -203,8 +195,6 @@ configuration = {
             'valid_phase_types': PT.vaporPhase,
             "parameter_data": {
                 "mw": (28.0134, pyunits.g / pyunits.mol),  # [4]
-                "pressure_crit": (33.978e5, pyunits.Pa),  # [[7]
-                "temperature_crit": (126.19, pyunits.K),  # [7]
                 "cp_mol_ig_comp_coeff": { #valid range 100 K to 500 K
                     "A": (28.98641		, pyunits.J / pyunits.mol / pyunits.K),  # [4]
                     "B": (1.853978, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),
@@ -241,7 +231,7 @@ configuration = {
 # Specifying state definition
 "state_definition": FTPx,
 "state_bounds": {
-    "flow_mol": (0, 100, 1000, pyunits.mol / pyunits.s),
+    "flow_mol": (0, 100, 10000, pyunits.mol / pyunits.s),
     "temperature": (273.15, 300, 2500, pyunits.K),
     "pressure": (5e3, 1e5, 1e6, pyunits.Pa),
 },

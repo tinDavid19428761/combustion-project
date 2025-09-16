@@ -115,45 +115,32 @@ f = {
     "gas_flow": 0.1717
 }
 
-flow_total = f["bl_flow"]+f["gas_flow"]+f["air_flow"]
-ar = f["air_flow"]/(flow_total)
+fuel_total = f["bl_flow"]+f["gas_flow"]
 
-m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.79*ar)
-m.fs.R101.inlet.mole_frac_comp[0,"O2"].fix(0.21*ar)
-m.fs.R101.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
-m.fs.R101.inlet.mole_frac_comp[0,"H2O"].fix(1e-20)
-m.fs.R101.inlet.mole_frac_comp[0,"BL"].fix(f["bl_flow"]/flow_total)
-m.fs.R101.inlet.mole_frac_comp[0,"uncombustible"].fix(1e-20)
-m.fs.R101.inlet.mole_frac_comp[0,"CH4"].fix(f["gas_flow"]/flow_total)
-m.fs.R101.inlet.temperature.fix(100+273.15) #guess, switch to mixer for more accurate
-m.fs.R101.inlet.pressure.fix(101325) #
-m.fs.R101.inlet.flow_mol.fix(flow_total/10)
 
-# #air stream
-# m.fs.mix.air.mole_frac_comp[0,"N2"].fix(0.79)
-# m.fs.mix.air.mole_frac_comp[0,"O2"].fix(0.21)
-# m.fs.mix.air.mole_frac_comp[0,"CO2"].fix(1e-20)
-# m.fs.mix.air.mole_frac_comp[0,"H2O"].fix(1e-20)
-# m.fs.mix.air.mole_frac_comp[0,"BL"].fix(1e-20)
-# m.fs.mix.air.mole_frac_comp[0,"uncombustible"].fix(1e-20)
-# m.fs.mix.air.mole_frac_comp[0,"CH4"].fix(1e-20)
-# m.fs.mix.air.temperature.fix(33+273.15)
-# m.fs.mix.air.pressure.fix(101325)
-# m.fs.mix.air.flow_mol.fix(f["air_flow"]/10) # /10 for keeping in initialisation bounds
+# air stream
+m.fs.mix.air.mole_frac_comp[0,"N2"].fix(0.79)
+m.fs.mix.air.mole_frac_comp[0,"O2"].fix(0.21)
+m.fs.mix.air.mole_frac_comp[0,"CO2"].fix(1e-20)
+m.fs.mix.air.mole_frac_comp[0,"H2O"].fix(1e-20)
+m.fs.mix.air.mole_frac_comp[0,"BL"].fix(1e-20)
+m.fs.mix.air.mole_frac_comp[0,"uncombustible"].fix(1e-20)
+m.fs.mix.air.mole_frac_comp[0,"CH4"].fix(1e-20)
+m.fs.mix.air.temperature.fix(33+273.15)
+m.fs.mix.air.pressure.fix(101325)
+m.fs.mix.air.flow_mol.fix(f["air_flow"]) # /10 for keeping in initialisation bounds
 
-# #fuel stream
-# m.fs.mix.fuel.mole_frac_comp[0,"N2"].fix(1e-20)
-# m.fs.mix.fuel.mole_frac_comp[0,"O2"].fix(1e-20)
-# m.fs.mix.fuel.mole_frac_comp[0,"CO2"].fix(1e-20)
-# m.fs.mix.fuel.mole_frac_comp[0,"H2O"].fix(1e-20)
-# # m.fs.mix.fuel.mole_frac_comp[0,"BL"].fix(f["bl_flow"]/fuel_total)
-# m.fs.mix.fuel.mole_frac_comp[0,"BL"].fix(1)
-# m.fs.mix.fuel.mole_frac_comp[0,"uncombustible"].fix(1e-20)
-# # m.fs.mix.fuel.mole_frac_comp[0,"CH4"].fix(f["gas_flow"]/fuel_total)
-# m.fs.mix.fuel.mole_frac_comp[0,"CH4"].fix(1e-20)
-# m.fs.mix.fuel.temperature.fix(123.6+273.15)
-# m.fs.mix.fuel.pressure.fix(101325)
-# m.fs.mix.fuel.flow_mol.fix(fuel_total/10)
+# black liquor stream stream
+m.fs.mix.fuel.mole_frac_comp[0,"N2"].fix(1e-20)
+m.fs.mix.fuel.mole_frac_comp[0,"O2"].fix(1e-20)
+m.fs.mix.fuel.mole_frac_comp[0,"CO2"].fix(1e-20)
+m.fs.mix.fuel.mole_frac_comp[0,"H2O"].fix(1e-20)
+m.fs.mix.fuel.mole_frac_comp[0,"BL"].fix(f["bl_flow"]/fuel_total)
+m.fs.mix.fuel.mole_frac_comp[0,"uncombustible"].fix(1e-20)
+m.fs.mix.fuel.mole_frac_comp[0,"CH4"].fix(f["gas_flow"]/fuel_total)
+m.fs.mix.fuel.temperature.fix(123.6+273.15)
+m.fs.mix.fuel.pressure.fix(101325)
+m.fs.mix.fuel.flow_mol.fix(fuel_total)
 
 
 
