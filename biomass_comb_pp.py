@@ -66,24 +66,24 @@ configuration = {
              
         },
 
-        # "uncombustible": {
-        #     "type": Component,
-        #     "elemental_composition": {"uncombustible":1}, #based on ash, mainly SiO2, Al2O3, CaO, Fe2O3, MgO
-        #     "cp_mol_sol_comp": ConstantProperties.Constant,
-        #     "enth_mol_sol_comp": ConstantProperties.Constant,
-        #     "dens_mol_sol_comp": ConstantProperties.Constant,
-        #     "visc_d_phase_comp": {"Sol": ConstantProperties.Constant},
-        #     'valid_phase_types': PT.solidPhase,
-        #     "parameter_data": {
-        #         "mw": (66.37, pyunits.g / pyunits.mol),
-        #         "cp_mol_sol_comp_coeff": (68.27, pyunits.J/pyunits.mol/pyunits.K), #Cp weighted average by composition of constituents
-        #         "dens_mol_sol_comp_coeff": (2960.415544, pyunits.mol/pyunits.m**3), #ignore
-        #         "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),          #ignore
-        #         "enrt_mol_form_sol_comp_ref": (158.1, pyunits.J/pyunits.mol/pyunits.K), #ignoer
-        #         "visc_d_Sol_comp_coeff": (3.2833e-05, pyunits.Pa*pyunits.s)  
-        #     },   
+        "uncombustible": {
+            "type": Component,
+            "elemental_composition": {"uncombustible":1}, #based on ash, mainly SiO2, Al2O3, CaO, Fe2O3, MgO
+            "cp_mol_sol_comp": ConstantProperties.Constant,
+            "enth_mol_sol_comp": ConstantProperties.Constant,
+            "dens_mol_sol_comp": ConstantProperties.Constant,
+            "visc_d_phase_comp": {"Sol": ConstantProperties.Constant},
+            'valid_phase_types': PT.solidPhase,
+            "parameter_data": {
+                "mw": (66.37, pyunits.g / pyunits.mol),
+                "cp_mol_sol_comp_coeff": (68.27, pyunits.J/pyunits.mol/pyunits.K), #Cp weighted average by composition of constituents
+                "dens_mol_sol_comp_coeff": (2960.415544, pyunits.mol/pyunits.m**3), #ignore
+                "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),          #ignore
+                "enrt_mol_form_sol_comp_ref": (158.1, pyunits.J/pyunits.mol/pyunits.K), #ignoer
+                "visc_d_Sol_comp_coeff": (3.2833e-05, pyunits.Pa*pyunits.s)  
+            },   
 
-        # },
+        },
 
         "O2": {
             "type": Component,

@@ -21,6 +21,7 @@ rxn_configuration = {
                             ("Vap", "O2"): -6,
                             ("Vap", "CO2"): 6,
                             ("Vap", "H2O"): 5,
+                            ("Sol", "uncombustible"): 0.01,
                             },
             "heat_of_reaction": constant_dh_rxn,
                 "rate_constant": arrhenius,
