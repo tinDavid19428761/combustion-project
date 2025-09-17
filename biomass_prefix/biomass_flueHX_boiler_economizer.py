@@ -77,7 +77,7 @@ from idaes.core.util.model_diagnostics import (
     DiagnosticsToolbox,
 )
 # from idaes.models_extra.power_generation.properties.flue_gas_ideal import FlueGasParameterBlock
-from adapted_flue_gas_ideal import FlueGasParameterBlock
+from random.parameter_block_flue_gas_ideal import FlueGasParameterBlock
 
 
 m = ConcreteModel()

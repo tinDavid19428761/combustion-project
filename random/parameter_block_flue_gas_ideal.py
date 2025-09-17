@@ -13,9 +13,7 @@
 """
 Basic property package for flue gas.
 
-Main assumptions:
-    - ideal gas
-    - components in flue gas: O2, N2, NO, CO2, H2O, SO2
+failed attempt at viscosity via normal parameter block method
 """
 # TODO: Missing docstrings
 # pylint: disable=missing-function-docstring

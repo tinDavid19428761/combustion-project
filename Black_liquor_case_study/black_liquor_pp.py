@@ -8,7 +8,6 @@ from pyomo.environ import units as pyunits
 from idaes.core import LiquidPhase, VaporPhase, Component, SolidPhase
 import idaes.logger as idaeslog
 
-import BL_property_methods
 
 from idaes.models.properties.modular_properties.state_definitions import FTPx
 from idaes.models.properties.modular_properties.eos.ideal import Ideal

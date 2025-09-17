@@ -36,7 +36,7 @@ from idaes.core.util.config import (
 )
 
 # from property_packages.combustion.biomass_combustion_rp import BMCombReactionParameterBlock
-from multi_fuel_rp  import MultiCombReactionParameterBlock
+from Ahuora_platform_stuff.multi_fuel_rp  import MultiCombReactionParameterBlock
 from biomass_combustion_rp import BMCombReactionParameterBlock
 
 
