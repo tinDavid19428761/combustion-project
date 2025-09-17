@@ -36,7 +36,7 @@ from idaes.core import FlowsheetBlock
 # Import idaes logger to set output levels
 import idaes.logger as idaeslog
 from idaes.models.properties.modular_properties import GenericParameterBlock
-from  biomass_comb_pp import configuration 
+from  Ahuora_platform_stuff.biomass_comb_pp import configuration 
 from  biomass_combustion_rp import BMCombReactionParameterBlock
 
 #helmholtz import for water
