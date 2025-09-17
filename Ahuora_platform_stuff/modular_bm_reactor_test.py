@@ -36,7 +36,7 @@ import idaes.logger as idaeslog
 from idaes.models.properties.modular_properties import GenericParameterBlock, GenericReactionParameterBlock
 # from  biomass_comb_pp import configuration 
 
-from  biomass_combustion_rp import BMCombReactionParameterBlock
+from biomass_prefix.biomass_combustion_rp import BMCombReactionParameterBlock
 
 #helmholtz import for water
 from idaes.models.properties.general_helmholtz import (
@@ -55,7 +55,7 @@ from idaes.core.util.model_diagnostics import (
 # from custom_combustion_reactor import MultiCombReactor
 import unittest
 
-from biomass_comb_pp import configuration
+from biomass_prefix.biomass_comb_pp import configuration
 from modular_biomass_rxn import rxn_configuration
 
 m = ConcreteModel()
