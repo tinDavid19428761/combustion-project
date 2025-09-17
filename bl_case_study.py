@@ -97,20 +97,20 @@ m.fs.H101 = Heater(
     property_package = m.fs.steam_properties,
 )
 
-# m.fs.mix = Mixer(
-#     property_package = m.fs.bl_properties,
-#     inlet_list = ["air","fuel"]
-# )
+m.fs.mix = Mixer(
+    property_package = m.fs.bl_properties,
+    inlet_list = ["air","fuel"]
+)
 
-# m.fs.s01 = Arc(source=m.fs.mix.outlet, destination=m.fs.R101.inlet)
-# TransformationFactory("network.expand_arcs").apply_to(m)
+m.fs.s01 = Arc(source=m.fs.mix.outlet, destination=m.fs.R101.inlet)
+TransformationFactory("network.expand_arcs").apply_to(m)
 
 
 #case study inputs
 #flows
 f = {
-    # "air_flow": 976,
-    "air_flow": 1670, #finding: will not feasible converge given limited oxygen. solution: increase air (strays from case study) or decrease stoich air in rxnpkg
+    "air_flow": 976,
+    # "air_flow": 1670, #finding: will not feasible converge given limited oxygen. solution: increase air (strays from case study) or decrease stoich air in rxnpkg
     "bl_flow": 998,
     "gas_flow": 0.1717
 }
@@ -155,14 +155,14 @@ m.fs.R101.outlet.temperature.fix(250+273.15)
 
 
 
+m.fs.mix.initialize(outlvl=idaeslog.INFO)
 m.fs.R101.initialize(outlvl=idaeslog.INFO)
 
+m.fs.H101.inlet.flow_mol.fix(2177.69)
+m.fs.H101.inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=45*10*1000*pyunits.Pa,T=300*pyunits.K))
+m.fs.H101.inlet.pressure.fix(45*10*1000)
 
-m.fs.H101.inlet.flow_mol.fix(300)
-m.fs.H101.inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=300*pyunits.K))
-m.fs.H101.inlet.pressure.fix(101325)
-
-m.fs.H101.outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=101325*pyunits.Pa,T=(400+273.15)*pyunits.K))
+m.fs.H101.outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=45*10*1000*pyunits.Pa,T=(400+273.15)*pyunits.K))
 
 
 
@@ -173,8 +173,19 @@ print(degrees_of_freedom(m.fs.H101))
 m.fs.H101.initialize(outlvl=idaeslog.INFO)
 
 # m.fs.H101.inlet.flow_mol.fix(217.36)
-m.fs.H101.inlet.flow_mol.unfix()
-m.fs.H101.heat_duty.fix(-value(m.fs.R101.heat_duty[0]))
+# m.fs.H101.inlet.flow_mol.unfix()
+# m.fs.H101.heat_duty.fix(-value(m.fs.R101.heat_duty[0]))
+
+m.fs.R101.outlet.temperature.unfix()
+
+def heat_transfer_rule(b,t):
+    return b.H101.heat_duty[0] == -b.R101.heat_duty[0]
+
+m.fs.heat_transfer = Constraint(
+    m.fs.time,
+    rule=heat_transfer_rule
+)
+
 # m.fs.R101.heat_duty.fix(-value(m.fs.H101.heat_duty[0]))
 # m.fs.R101.outlet.temperature.unfix() #solving for flue temp
 
@@ -187,5 +198,6 @@ solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)
 m.fs.R101.report()
 m.fs.H101.report()
+m.fs.mix.report()
 # m.fs.R101.display()
 
