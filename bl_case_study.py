@@ -145,7 +145,7 @@ m.fs.mix.fuel.flow_mol.fix(fuel_total)
 
 
 m.fs.R101.conversion_Rbl.fix(1)
-m.fs.R101.conversion_RCH4.fix(0)
+m.fs.R101.conversion_RCH4.fix(0.0)
 
 m.fs.R101.dh_rxn_RCH4.fix(-802125) #must fix with actual numbers not just .fix()
 m.fs.R101.dh_rxn_Rbl.fix(-135150)
@@ -177,6 +177,8 @@ m.fs.H101.initialize(outlvl=idaeslog.INFO)
 # m.fs.H101.heat_duty.fix(-value(m.fs.R101.heat_duty[0]))
 
 m.fs.R101.outlet.temperature.unfix()
+m.fs.R101.conversion_RCH4.fix(1)
+
 
 def heat_transfer_rule(b,t):
     return b.H101.heat_duty[0] == -b.R101.heat_duty[0]
