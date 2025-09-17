@@ -55,7 +55,7 @@ from idaes.core.util.model_diagnostics import (
 import unittest
 
 from biomass_comb_pp import configuration
-from modular_biomass_rxn import rxn_configuration
+from modular_methane_rxn import rxn_configuration
 
 m = ConcreteModel()
 
@@ -75,15 +75,14 @@ m.fs.react = StoichiometricReactor(
 
 m.fs.react.inlet.mole_frac_comp[0,"O2"].fix(0.28)
 m.fs.react.inlet.mole_frac_comp[0,"N2"].fix(0.7)
-m.fs.react.inlet.mole_frac_comp[0,"biomass"].fix(0.02)
+m.fs.react.inlet.mole_frac_comp[0,"CH4"].fix(0.02)
 m.fs.react.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
 m.fs.react.inlet.mole_frac_comp[0,"H2O"].fix(1e-20)
-m.fs.react.inlet.mole_frac_comp[0,"uncombustible"].fix(1e-20)
 m.fs.react.inlet.flow_mol.fix(10)
 m.fs.react.inlet.temperature.fix(30+273.15)
 m.fs.react.inlet.pressure.fix(101325)
 
-m.fs.react.rate_reaction_extent[0,"Rbiomass"].fix(0.2)
+m.fs.react.rate_reaction_extent[0,"RCH4"].fix(0.2)
 
 # m.fs.react.heat_duty[0].fix()
 m.fs.react.outlet.temperature.fix(300+273.15)

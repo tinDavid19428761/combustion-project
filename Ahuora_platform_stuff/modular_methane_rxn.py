@@ -16,19 +16,19 @@ rxn_configuration = {
                    "amount": pyunits.mol,
                    "temperature": pyunits.K},
     "rate_reactions":{
-        "Rbiomass": {
-            "stoichiometry": {("Sol", "biomass"): -1,
-                            ("Vap", "O2"): -6,
-                            ("Vap", "CO2"): 6,
-                            ("Vap", "H2O"): 5,
-                            # ("Sol", "uncombustible"): 0.01,
+        "RCH4": {
+            "stoichiometry": {
+                            ("Vap", "CH4"): -1,
+                            ("Vap", "O2"): -2,
+                            ("Vap", "CO2"): 1,
+                            ("Vap", "H2O"): 2,
                             },
             "heat_of_reaction": constant_dh_rxn,
                 "rate_constant": arrhenius,
                 "rate_form": power_law_rate,
                 "concentration_form": ConcentrationForm.moleFraction,
                 "parameter_data": {
-                    "dh_rxn_ref": (-2749556.40, pyunits.J/pyunits.mol),
+                    "dh_rxn_ref": (-802125, pyunits.J/pyunits.mol),
                     "arrhenius_const": (1, pyunits.mol/pyunits.m**3/pyunits.s),
                     "energy_activation": (0, pyunits.J/pyunits.mol)},
         }
