@@ -278,5 +278,5 @@ configuration = {
 "pressure_ref": (1e5, pyunits.Pa),
 "temperature_ref": (300, pyunits.K),
 
-"include_enthalpy_of_formation":(False)
+"include_enthalpy_of_formation":(True)
 }
