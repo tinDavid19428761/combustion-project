@@ -1,0 +1,160 @@
+"""
+Property package for the combustion of biomass in air
+"""
+# Import Pyomo units
+from pyomo.environ import units as pyunits
+
+# Import IDAES cores
+from idaes.core import LiquidPhase, VaporPhase, Component, SolidPhase
+import idaes.logger as idaeslog
+
+from idaes.models.properties.modular_properties.state_definitions import FTPx
+from idaes.models.properties.modular_properties.eos.ideal import Ideal
+from idaes.models.properties.modular_properties.pure import ConstantProperties, ChapmanEnskog
+from idaes.models.properties.modular_properties.phase_equil import SmoothVLE
+from idaes.models.properties.modular_properties.phase_equil.bubble_dew import (
+    IdealBubbleDew,
+)
+from idaes.models.properties.modular_properties.phase_equil.forms import fugacity
+from idaes.models.properties.modular_properties.pure import Perrys
+from idaes.models.properties.modular_properties.pure import RPP4
+from idaes.models.properties.modular_properties.pure import NIST
+from idaes.core import PhaseType as PT
+
+
+# Set up logger
+_log = idaeslog.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------
+# Configuration dictionary for an ideal Benzene-Toluene system
+
+# Data Sources:
+# [1] The Properties of Gases and Liquids (1987)
+#     4th edition, Chemical Engineering Series - Robert C. Reid
+# [2] Perry's Chemical Engineers' Handbook 7th Ed.
+# [3] Engineering Toolbox, https://www.engineeringtoolbox.com
+#     Retrieved 1st December, 2019
+#[4]NIST
+#[5] wagner, Ewers, et al.,1976
+#[6] Suehiro, Nakajima, et al., 1996
+#[7] Jacobsen, Stewart, et al., 1986
+# [8] 	Cardoso, 1915
+
+configuration = {
+    "include_enthalpy_of_formation":(True), #put this at the top
+    # Specifying components
+    "components": {
+        
+
+        "H2O2": {
+            "type": Component,
+            "elemental_composition": {"H":2,"O":2}, 
+            "cp_mol_liq_comp": ConstantProperties.Constant,
+            "enth_mol_liq_comp": ConstantProperties.Constant,
+            "dens_mol_liq_comp": ConstantProperties.Constant,
+            'valid_phase_types': PT.liquidPhase,
+            "parameter_data": {
+                "mw": (34.0147, pyunits.g / pyunits.mol),
+                "cp_mol_liq_comp_coeff": (89.046, pyunits.J/pyunits.mol/pyunits.K), 
+                "dens_mol_liq_comp_coeff": (2960.415544, pyunits.mol/pyunits.m**3), 
+                "enth_mol_form_liq_comp_ref": (-187.8, pyunits.kJ/pyunits.mol),   
+            },   
+
+        },
+
+        "O2": {
+            "type": Component,
+            "elemental_composition": {"O":2},
+            "enth_mol_ig_comp": NIST,
+            "cp_mol_ig_comp": NIST,
+            "visc_d_phase_comp": {"Vap": ConstantProperties.Constant},
+            'valid_phase_types': PT.vaporPhase,
+            "parameter_data": {
+                "mw": (31.9988, pyunits.g / pyunits.mol),  # [4]
+                "pressure_crit": (50.43e5, pyunits.Pa),  # [8]
+                "temperature_crit": (154.58, pyunits.K),  # [8]
+                "cp_mol_ig_comp_coeff": { # valid range 100 K - 700 K
+                    # "A": (31.32234	, pyunits.J / pyunits.mol / pyunits.K),  # [4]
+                    # "B": (-20.23531, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),
+                    # "C": (57.86644, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-2),
+                    # "D": (-36.50624, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-3),
+                    # "E": (-0.007374, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**2),
+                    # "F": (-8.903471, pyunits.kJ / pyunits.mol),
+                    # "G": (246.7945, pyunits.J / pyunits.mol /pyunits.K),
+                    # "H": (0, pyunits.kJ / pyunits.mol)
+                    "A": (30.03235	, pyunits.J / pyunits.mol / pyunits.K),  # [4] #valid range  700-2000
+                    "B": (8.772972, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),
+                    "C": (-3.988133, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-2),
+                    "D": (0.788313, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-3),
+                    "E": (-0.741599, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**2),
+                    "F": (-11.32468, pyunits.kJ / pyunits.mol),
+                    "G": (236.1663, pyunits.J / pyunits.mol /pyunits.K),
+                    "H": (0, pyunits.kJ / pyunits.mol)
+                },
+                "enth_mol_form_vap_comp_ref": (0, pyunits.kJ / pyunits.mol),  # [4]
+                "visc_d_Vap_comp_coeff": (3.8642e-05	, pyunits.Pa*pyunits.s)
+
+            },
+        },
+        "H2O": {
+           "type": Component,
+           "elemental_composition":{"H":2,"O":1},
+           "enth_mol_ig_comp": NIST,
+           "cp_mol_ig_comp": NIST,
+           "pressure_sat_comp": NIST,
+           "visc_d_phase_comp": {"Vap": ConstantProperties.Constant},
+           'valid_phase_types': PT.vaporPhase,
+           "parameter_data": {
+               "mw": (18.0153e-3, pyunits.kg / pyunits.mol),  # [4]
+               "pressure_crit": (220.64e5, pyunits.Pa),  # [4]
+               "temperature_crit": (647, pyunits.K),  # [4]
+               "cp_mol_ig_comp_coeff": { #valid range 500 K- 1700 K
+                   "A": (30.09200,pyunits.J / pyunits.mol / pyunits.K,),  # [4] 
+                   "B": (6.832514,pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1,),
+                   "C": (6.793435,pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-2,),
+                   "D": (-2.534480,pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-3,),
+                   "E": (0.082139,pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**2,),
+                   "F": (-250.8810, pyunits.kJ / pyunits.mol),
+                   "G": (223.3967, pyunits.J / pyunits.mol / pyunits.K),
+                   "H": (-241.8264, pyunits.kJ / pyunits.mol),
+               },
+               "enth_mol_form_vap_comp_ref": (0, pyunits.J / pyunits.mol),  # [4]
+
+               "pressure_sat_comp_coeff": {
+                   "A": (4.6543, None),  # [4], temperature range 255.9 K - 373 K
+                   "B": (1435.264, pyunits.K),
+                   "C": (-64.848, pyunits.K),
+               },
+               "visc_d_Vap_comp_coeff": (2.8564e-05	, pyunits.Pa*pyunits.s)
+           },
+       },
+    },
+
+# Specifying phases
+"phases": {
+    "Vap": {"type": VaporPhase, "equation_of_state": Ideal},#Pv=nT
+    "Liq": {"type": LiquidPhase, "equation_of_state": Ideal},#Pv=nT
+    # "Sol": {"type": SolidPhase, "equation_of_state": Ideal}
+
+},
+# Set base units of measurement
+"base_units": {
+    "time": pyunits.s,
+    "length": pyunits.m,
+    "mass": pyunits.kg,
+    "amount": pyunits.mol,
+    "temperature": pyunits.K,
+},
+# Specifying state definition
+"state_definition": FTPx,
+"state_bounds": {
+    "flow_mol": (0, 100, 1000, pyunits.mol / pyunits.s),
+    "temperature": (273.15, 300, 2500, pyunits.K),
+    "pressure": (5e3, 1e5, 1e6, pyunits.Pa),
+},
+"pressure_ref": (1e5, pyunits.Pa),
+"temperature_ref": (300, pyunits.K),
+
+
+}

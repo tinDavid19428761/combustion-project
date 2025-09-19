@@ -42,7 +42,7 @@ _log = idaeslog.getLogger(__name__)
 # [8] 	Cardoso, 1915
 
 configuration = {
-    "include_enthalpy_of_formation":(True), #put this at the top
+    "include_enthalpy_of_formation":(False), #put this at the top
     # Specifying components
     "components": {
         # https://github.com/IDAES/idaes-pse/blob/main/idaes/models/properties/modular_properties/pure/ConstantProperties.py
