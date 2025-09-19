@@ -60,7 +60,7 @@ from idaes.core import FlowsheetBlock
 # Import idaes logger to set output levels
 import idaes.logger as idaeslog
 from idaes.models.properties.modular_properties import GenericParameterBlock
-from  Ahuora_platform_stuff.biomass_comb_pp import configuration 
+from  biomass_comb_pp import configuration 
 from  biomass_combustion_rp import BMCombReactionParameterBlock
 
 #helmholtz import for water
@@ -76,8 +76,6 @@ from idaes.models.unit_models.separator import SplittingType, EnergySplittingTyp
 from idaes.core.util.model_diagnostics import (
     DiagnosticsToolbox,
 )
-# from idaes.models_extra.power_generation.properties.flue_gas_ideal import FlueGasParameterBlock
-from random.parameter_block_flue_gas_ideal import FlueGasParameterBlock
 
 
 m = ConcreteModel()
@@ -137,8 +135,8 @@ m.fs.s05 = Arc(source=m.fs.bdw_sep.vap_outlet,destination=m.fs.superheater.tube_
 TransformationFactory("network.expand_arcs").apply_to(m)
 
 #specifying reaction package variables
-m.fs.fire_side.reaction_package.h.fix(0.06) #h and w in dh_rxn calculation
-m.fs.fire_side.reaction_package.w.fix(0.09)
+# m.fs.fire_side.reaction_package.h.fix(0.06) #h and w in dh_rxn calculation
+# m.fs.fire_side.reaction_package.w.fix(0.09)
 m.fs.fire_side.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","ash"].unfix()
 m.fs.fire_side.ash_mass.fix(0.03)
 
