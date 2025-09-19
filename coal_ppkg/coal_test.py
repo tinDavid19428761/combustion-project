@@ -1,0 +1,105 @@
+#stoich_reactor_test
+from pyomo.environ import (
+    Constraint,
+    Var,
+    ConcreteModel,
+    Expression,
+    Param,
+    Objective,
+    SolverFactory,
+    TransformationFactory,
+    value,
+    units as pyunits
+)
+from pyomo.network import Arc, SequentialDecomposition
+# from pytest import approx
+
+#Todo add the four other unit operations
+from idaes.models.unit_models import (
+Mixer,
+# StoichiometricReactor,
+Heater,
+HeatExchanger,
+Separator,
+Flash,
+StoichiometricReactor
+)
+from idaes.models_extra.power_generation.unit_models.helm.phase_separator import HelmPhaseSeparator
+
+from idaes.models.unit_models.pressure_changer import ThermodynamicAssumption
+from idaes.core.util.model_statistics import degrees_of_freedom
+from idaes.core import FlowsheetBlock
+# Import idaes logger to set output levels
+import idaes.logger as idaeslog
+from idaes.models.properties.modular_properties import GenericParameterBlock, GenericReactionParameterBlock
+
+
+#helmholtz import for water
+from idaes.models.properties.general_helmholtz import (
+        HelmholtzParameterBlock,
+        HelmholtzThermoExpressions,
+        AmountBasis,
+        PhaseType,
+        StateVars
+    )
+from idaes.models.unit_models.heat_exchanger import delta_temperature_amtd_callback, HX0DInitializer
+from idaes.models.unit_models.separator import SplittingType, EnergySplittingType
+from idaes.core.util.model_diagnostics import (DiagnosticsToolbox,)
+
+import unittest
+
+from coal_ppkg import configuration 
+from coal_rxnpkg import rxn_configuration
+
+m = ConcreteModel()
+
+m.fs = FlowsheetBlock(dynamic=False)
+
+m.fs.coal_properties = GenericParameterBlock(**configuration)
+
+# m.fs.steam_properties = HelmholtzParameterBlock(
+#         pure_component="h2o", amount_basis=AmountBasis.MOLE,
+#         phase_presentation=PhaseType.LG,
+#         # state_vars=StateVars.TPX
+#     )
+m.fs.reaction_params = GenericReactionParameterBlock(property_package=m.fs.coal_properties, **rxn_configuration)
+
+m.fs.R101 = StoichiometricReactor(
+    property_package = m.fs.coal_properties,
+    reaction_package = m.fs.reaction_params,
+    has_heat_of_reaction=True,
+    has_heat_transfer=True,
+    has_pressure_change=False,
+)
+
+m.fs.R101.conversion["Rcoal"].fix(0.5)
+
+
+# m.fs.R101.heat_duty[0].fix(-1000)
+
+#reactor feed stream
+m.fs.R101.inlet.mole_frac_comp[0,"coal"].fix(0.01) 
+m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.69)
+m.fs.R101.inlet.mole_frac_comp[0,"O2"].fix(0.2)
+m.fs.R101.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
+m.fs.R101.inlet.mole_frac_comp[0,"NO2"].fix(1e-20)
+m.fs.R101.inlet.mole_frac_comp[0,"SO2"].fix(1e-20)
+m.fs.R101.inlet.mole_frac_comp[0,"H2O"].fix(1e-20) 
+m.fs.R101.inlet.mole_frac_comp[0,"uncombustibles"].fix(1e-20)
+m.fs.R101.inlet.temperature.fix(300)
+m.fs.R101.inlet.pressure.fix(101325)
+m.fs.R101.inlet.flow_mol.fix(40)
+
+m.fs.R101.outlet.temperature.fix(500)
+
+print(degrees_of_freedom(m))
+assert degrees_of_freedom(m) == 0
+m.fs.R101.initialize(outlvl=idaeslog.INFO)
+solver=SolverFactory("ipopt")
+status=solver.solve(m,tee=True)
+m.fs.R101.report()
+# print(value(m.fs.R101.config.reaction_package.rate_reaction_stoichiometry["R1", "Sol", "ash"]))
+# print(value(m.fs.R101.config.reaction_package.dh_rxn["R1"]))
+# m.fs.R101.display()
+
+
