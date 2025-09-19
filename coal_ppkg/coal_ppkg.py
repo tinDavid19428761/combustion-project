@@ -50,7 +50,8 @@ configuration = {
         # parameters: : cp_mol, enth_mol_form, entr_mol_form, dens_mol()
         "coal": { 
             "type": Component,
-            "elemental_composition": {"C":81.3, "H":4,"O":9.89,"N":1.12,"S":3.69 }, # 10.1021/acsomega.2c00505 nominal coal composition
+            # "elemental_composition": {"C":813, "H":40,"O":99,"N":11,"S":37 }, # 10.1021/acsomega.2c00505 nominal coal composition
+            "elemental_composition": {"coal":1}, 
             "enth_mol_sol_comp": ConstantProperties.Constant,
             "cp_mol_sol_comp": ConstantProperties.Constant,
             "dens_mol_sol_comp": ConstantProperties.Constant,
@@ -264,7 +265,7 @@ configuration = {
 # Specifying phases
 "phases": {
     "Vap": {"type": VaporPhase, "equation_of_state": Ideal},#Pv=nT
-    # "Sol": {"type": SolidPhase, "equation_of_state": Ideal}
+    "Sol": {"type": SolidPhase, "equation_of_state": Ideal}
 
 },
 # Set base units of measurement

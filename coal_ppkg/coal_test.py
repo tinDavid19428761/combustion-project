@@ -72,25 +72,26 @@ m.fs.R101 = StoichiometricReactor(
     has_pressure_change=False,
 )
 
-m.fs.R101.conversion["Rcoal"].fix(0.5)
+m.fs.R101.rate_reaction_extent[0,"Rcoal"].fix(0.5) #half of 0.1 mol/s of coal
 
 
 # m.fs.R101.heat_duty[0].fix(-1000)
 
 #reactor feed stream
-m.fs.R101.inlet.mole_frac_comp[0,"coal"].fix(0.01) 
-m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.69)
+m.fs.R101.inlet.mole_frac_comp[0,"coal"].fix(0.05) 
+m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.65)
 m.fs.R101.inlet.mole_frac_comp[0,"O2"].fix(0.2)
 m.fs.R101.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
 m.fs.R101.inlet.mole_frac_comp[0,"NO2"].fix(1e-20)
 m.fs.R101.inlet.mole_frac_comp[0,"SO2"].fix(1e-20)
 m.fs.R101.inlet.mole_frac_comp[0,"H2O"].fix(1e-20) 
-m.fs.R101.inlet.mole_frac_comp[0,"uncombustibles"].fix(1e-20)
+m.fs.R101.inlet.mole_frac_comp[0,"uncombustible"].fix(1e-20)
 m.fs.R101.inlet.temperature.fix(300)
 m.fs.R101.inlet.pressure.fix(101325)
-m.fs.R101.inlet.flow_mol.fix(40)
+m.fs.R101.inlet.flow_mol.fix(10)
 
-m.fs.R101.outlet.temperature.fix(500)
+# m.fs.R101.outlet.temperature.fix(500)
+m.fs.R101.heat_duty.fix(0)
 
 print(degrees_of_freedom(m))
 assert degrees_of_freedom(m) == 0

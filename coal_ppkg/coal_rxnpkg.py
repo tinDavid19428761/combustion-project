@@ -18,13 +18,13 @@ rxn_configuration = {
     "rate_reactions":{
         "Rcoal": {
             "stoichiometry": { #assumed 3wt% ash + ultimate analysis [C,H,O,N,S] from https://pmc.ncbi.nlm.nih.gov/articles/PMC9178619/
-                            ("Vap", "coal"): -1,
+                            ("Sol", "coal"): -1,
                             ("Vap", "O2"): -0.8211,
                             ("Vap", "CO2"): 0.8082,
                             ("Vap", "H2O"): 0.01988,
                             ("Vap", "NO2"): 0.011134,
                             ("Vap", "SO2"): 0.036682,
-                            ("Vap", "uncombustible"): 0.005905,
+                            ("Sol", "uncombustible"): 0.005905,
                             },
             "heat_of_reaction": constant_dh_rxn,
                 "rate_constant": arrhenius,
