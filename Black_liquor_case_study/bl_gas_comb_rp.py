@@ -65,7 +65,7 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
         self.reaction_set = Set(initialize=[("Rbl", "Vap", "H2O"),
                                             ("Rbl", "Vap", "CO2"),
                                             ("Rbl", "Vap", "O2"),
-                                            ("Rbl", "Sol", "BL"),
+                                            ("Rbl", "Liq", "BL"),
                                             ("Rbl", "Vap", "N2"),
                                             ("Rbl", "Sol", "uncombustible"),
                                             ("Rbl", "Vap", "CH4"),
@@ -73,7 +73,7 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                                             ("RCH4", "Vap", "H2O"),
                                             ("RCH4", "Vap", "CO2"),
                                             ("RCH4", "Vap", "O2"),
-                                            ("RCH4", "Sol", "BL"),
+                                            ("RCH4", "Liq", "BL"),
                                             ("RCH4", "Vap", "N2"),
                                             ("RCH4", "Sol", "uncombustible"),
                                             ("RCH4", "Vap", "CH4"),
@@ -84,7 +84,7 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                                             ("Rbl", "Vap", "H2O"): 1-0.7-(0.875*0.3), # carryover water subtract(H2O consumed based on Co2 emit.)
                                             ("Rbl", "Vap", "CO2"): 0.3, #based on assumed black liquor emissions factor of 95.3 CO2/GJ         
                                             ("Rbl", "Vap", "O2"): -0.3+(0.15*0.875), #0.3 based on Co2 emit. add(Oxygen supplied by H2O)
-                                            ("Rbl", "Sol", "BL"): -1,   
+                                            ("Rbl", "Liq", "BL"): -1,   
                                             ("Rbl", "Vap", "N2"): 0,
                                             ("Rbl", "Sol", "uncombustible"): 0.7-0.3, #assume solids are retained
                                             ("Rbl", "Vap", "CH4"): 0,
@@ -92,7 +92,7 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                                             ("RCH4", "Vap", "H2O"): 2,
                                             ("RCH4", "Vap", "CO2"): 1,
                                             ("RCH4", "Vap", "O2"): -2,
-                                            ("RCH4", "Sol", "BL"): 0,
+                                            ("RCH4", "Liq", "BL"): 0,
                                             ("RCH4", "Vap", "N2"): 0,
                                             ("RCH4", "Sol", "uncombustible"): 0,
                                             ("RCH4", "Vap", "CH4"): -1,

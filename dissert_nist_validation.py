@@ -101,7 +101,7 @@ _log = idaeslog.getLogger(__name__)
 # [8] 	Cardoso, 1915
 
 configuration = {
-    "include_enthalpy_of_formation":(True), #put this at the top
+    "include_enthalpy_of_formation":(False), #put this at the top
     # Specifying components
     "components": {
         "CH4": {
@@ -124,8 +124,6 @@ configuration = {
                     "G": (158.7163, pyunits.J / pyunits.mol /pyunits.K),
                     "H": (-74.87310, pyunits.kJ / pyunits.mol),
                 },
-                "enth_mol_form_vap_comp_ref": (0, pyunits.kJ / pyunits.mol),  # [4]
-
             },
         },
     },
@@ -169,7 +167,7 @@ m.fs.react = Pump(
 
 m.fs.react.inlet.mole_frac_comp[0,"CH4"].fix(1)
 m.fs.react.inlet.temperature.fix(300)
-m.fs.react.inlet.pressure.fix(101325)
+m.fs.react.inlet.pressure.fix(1e5)
 m.fs.react.inlet.flow_mol.fix(10)
 m.fs.react.deltaP.fix(30000)
 m.fs.react.efficiency_pump.fix(0.8)
@@ -183,4 +181,5 @@ status=solver.solve(m,tee=True)
 
 m.fs.react.report()
 print(value(m.fs.react.control_volume.properties_in[0].cp_mol))
+print(value(m.fs.react.control_volume.properties_in[0].enth_mol))
 # m.fs.react.inlet.controlVolume0d

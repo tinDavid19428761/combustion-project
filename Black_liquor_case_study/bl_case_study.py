@@ -52,7 +52,7 @@ import idaes.logger as idaeslog
 from idaes.models.properties.modular_properties import GenericParameterBlock
 # from  biomass_comb_pp import configuration 
 from black_liquor_pp import configuration
-from  biomass_combustion_rp import BMCombReactionParameterBlock
+# from bl_gas_comb_rp import MultiCombReactionParameterBlock
 
 #helmholtz import for water
 from idaes.models.properties.general_helmholtz import (
