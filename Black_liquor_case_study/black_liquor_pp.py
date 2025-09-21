@@ -132,7 +132,7 @@ configuration = {
             "parameter_data": {
                 "mw": (16.0425, pyunits.g / pyunits.mol),  # [4]
                 "cp_mol_ig_comp_coeff": { #valid range 298 K - 1300 K
-                    "A": (-0.703029	, pyunits.J / pyunits.mol / pyunits.K),  # [4]
+                    "A": (-0.703029	, pyunits.J / pyunits.mol / pyunits.K), 
                     "B": (108.4773, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),
                     "C": (-42.52157, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-2),
                     "D": (5.862788, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-3),
@@ -141,8 +141,6 @@ configuration = {
                     "G": (158.7163, pyunits.J / pyunits.mol /pyunits.K),
                     "H": (-74.87310, pyunits.kJ / pyunits.mol),
                 },
-                "enth_mol_form_vap_comp_ref": (0, pyunits.kJ / pyunits.mol),  # [4]
-
             },
         },
         "CO2": {

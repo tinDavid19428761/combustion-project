@@ -26,10 +26,10 @@ rxn_configuration = {
                             ("Sol", "uncombustible"): 0.03,
                             },
             "heat_of_reaction": constant_dh_rxn,
-                "rate_constant": arrhenius,
-                "rate_form": power_law_rate,
-                "concentration_form": ConcentrationForm.moleFraction,
-                "parameter_data": {
+            "rate_constant": arrhenius,
+            "rate_form": power_law_rate,
+            "concentration_form": ConcentrationForm.moleFraction,
+            "parameter_data": {
                     "dh_rxn_ref": (-328066.056, pyunits.J/pyunits.mol),
                     "arrhenius_const": (1, pyunits.mol/pyunits.m**3/pyunits.s),
                     "energy_activation": (0, pyunits.J/pyunits.mol)},

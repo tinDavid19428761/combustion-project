@@ -28,9 +28,8 @@ rxn_configuration = {
                 "rate_form": power_law_rate,
                 "concentration_form": ConcentrationForm.moleFraction,
                 "parameter_data": {
-                    # "dh_rxn_ref": (-802125, pyunits.J/pyunits.mol),
-                    "dh_rxn_ref": (-0, pyunits.J/pyunits.mol),
-                    "arrhenius_const": (1, pyunits.mol/pyunits.m**3/pyunits.s),
+                    "dh_rxn_ref": (0, pyunits.J/pyunits.mol),
+                    "arrhenius_const": (0, pyunits.mol/pyunits.m**3/pyunits.s),
                     "energy_activation": (0, pyunits.J/pyunits.mol)},
         }
     }
