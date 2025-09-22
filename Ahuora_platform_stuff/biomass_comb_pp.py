@@ -48,24 +48,24 @@ configuration = {
         # https://github.com/IDAES/idaes-pse/blob/main/idaes/models/properties/modular_properties/pure/ConstantProperties.py
         #constant[solid]properties (pure)
         # parameters: : cp_mol, enth_mol_form, entr_mol_form, dens_mol()
-        # "biomass": { 
-        #     "type": Component,
-        #     "elemental_composition": {"C":6, "H": 10, "O": 5}, #[] cellulose composition  C6,H10,O5
-        #     "enth_mol_sol_comp": ConstantProperties.Constant,
-        #     "cp_mol_sol_comp": ConstantProperties.Constant,
-        #     "dens_mol_sol_comp": ConstantProperties.Constant,
-        #     "visc_d_phase_comp": {"Sol": ConstantProperties.Constant},
-        #     'valid_phase_types': PT.solidPhase,
-        #     "parameter_data": {
-        #         "mw": (162.1394, pyunits.g / pyunits.mol),
-        #         "cp_mol_sol_comp_coeff": (243.2091, pyunits.J/pyunits.mol/pyunits.K),
-        #         "dens_mol_sol_comp_coeff": (2960.415544, pyunits.mol/pyunits.m**3), 
-        #         "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),
-        #         "enrt_mol_form_sol_comp_ref": (158.1, pyunits.J/pyunits.mol/pyunits.K),
-        #         "visc_d_Sol_comp_coeff": (3.2833e-05, pyunits.Pa*pyunits.s)  
-        #     }, 
+        "biomass": { 
+            "type": Component,
+            "elemental_composition": {"C":6, "H": 10, "O": 5}, #[] cellulose composition  C6,H10,O5
+            "enth_mol_sol_comp": ConstantProperties.Constant,
+            "cp_mol_sol_comp": ConstantProperties.Constant,
+            "dens_mol_sol_comp": ConstantProperties.Constant,
+            "visc_d_phase_comp": {"Sol": ConstantProperties.Constant},
+            'valid_phase_types': PT.solidPhase,
+            "parameter_data": {
+                "mw": (162.1394, pyunits.g / pyunits.mol),
+                "cp_mol_sol_comp_coeff": (243.2091, pyunits.J/pyunits.mol/pyunits.K),
+                "dens_mol_sol_comp_coeff": (2960.415544, pyunits.mol/pyunits.m**3), 
+                "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),
+                "enrt_mol_form_sol_comp_ref": (158.1, pyunits.J/pyunits.mol/pyunits.K),
+                "visc_d_Sol_comp_coeff": (3.2833e-05, pyunits.Pa*pyunits.s)  
+            }, 
              
-        # },
+        },
 
         # "uncombustible": {
         #     "type": Component,
@@ -239,14 +239,24 @@ configuration = {
                 "mw": (28.0134, pyunits.g / pyunits.mol),  # [4]
                 "pressure_crit": (33.978e5, pyunits.Pa),  # [[7]
                 "temperature_crit": (126.19, pyunits.K),  # [7]
-                "cp_mol_ig_comp_coeff": { #valid range 100 K to 500 K
-                    "A": (28.98641		, pyunits.J / pyunits.mol / pyunits.K),  # [4]
-                    "B": (1.853978, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),
-                    "C": (-9.647459	, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-2),
-                    "D": (16.63537	, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-3),
-                    "E": (0.000117, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**2),
-                    "F": (-8.671914, pyunits.kJ / pyunits.mol),
-                    "G": (226.4168, pyunits.J / pyunits.mol /pyunits.K),
+                # "cp_mol_ig_comp_coeff": { #valid range 100 K to 500 K
+                #     "A": (28.98641		, pyunits.J / pyunits.mol / pyunits.K),  # [4]
+                #     "B": (1.853978, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),
+                #     "C": (-9.647459	, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-2),
+                #     "D": (16.63537	, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-3),
+                #     "E": (0.000117, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**2),
+                #     "F": (-8.671914, pyunits.kJ / pyunits.mol),
+                #     "G": (226.4168, pyunits.J / pyunits.mol /pyunits.K),
+                #     "H": (0, pyunits.kJ / pyunits.mol)
+                # },
+                "cp_mol_ig_comp_coeff": { #valid range 500 K to 2000 K
+                    "A": (19.50583	, pyunits.J / pyunits.mol / pyunits.K),  # [4]
+                    "B": (19.88705, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),
+                    "C": (-8.598535	, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-2),
+                    "D": (1.369784	, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-3),
+                    "E": (0.527601, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**2),
+                    "F": (-4.935202, pyunits.kJ / pyunits.mol),
+                    "G": (212.3900, pyunits.J / pyunits.mol /pyunits.K),
                     "H": (0, pyunits.kJ / pyunits.mol)
                 },
                 "enth_mol_form_vap_comp_ref": (0, pyunits.kJ / pyunits.mol),  # [4]

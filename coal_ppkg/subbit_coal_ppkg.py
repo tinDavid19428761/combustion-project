@@ -174,7 +174,7 @@ configuration = {
            "visc_d_phase_comp": {"Vap": ConstantProperties.Constant},
            'valid_phase_types': PT.vaporPhase,
            "parameter_data": {
-               "mw": (18.0153e-3, pyunits.kg / pyunits.mol),  # [4]
+               "mw": (18.0153, pyunits.g / pyunits.mol),  # [4]
                "pressure_crit": (220.64e5, pyunits.Pa),  # [4]
                "temperature_crit": (647, pyunits.K),  # [4]
                "cp_mol_ig_comp_coeff": { #valid range 500 K- 1700 K
