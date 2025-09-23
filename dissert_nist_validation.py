@@ -141,22 +141,22 @@ configuration = {
                 "pressure_crit": (50.43e5, pyunits.Pa),  # [8]
                 "temperature_crit": (154.58, pyunits.K),  # [8]
                 "cp_mol_ig_comp_coeff": { # valid range 100 K - 700 K
-                    # "A": (31.32234	, pyunits.J / pyunits.mol / pyunits.K),  # [4]
-                    # "B": (-20.23531, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),
-                    # "C": (57.86644, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-2),
-                    # "D": (-36.50624, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-3),
-                    # "E": (-0.007374, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**2),
-                    # "F": (-8.903471, pyunits.kJ / pyunits.mol),
-                    # "G": (246.7945, pyunits.J / pyunits.mol /pyunits.K),
-                    # "H": (0, pyunits.kJ / pyunits.mol)
-                    "A": (30.03235	, pyunits.J / pyunits.mol / pyunits.K),  # [4] #valid range  700-2000
-                    "B": (8.772972, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),
-                    "C": (-3.988133, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-2),
-                    "D": (0.788313, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-3),
-                    "E": (-0.741599, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**2),
-                    "F": (-11.32468, pyunits.kJ / pyunits.mol),
-                    "G": (236.1663, pyunits.J / pyunits.mol /pyunits.K),
+                    "A": (31.32234	, pyunits.J / pyunits.mol / pyunits.K),  # [4]
+                    "B": (-20.23531, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),
+                    "C": (57.86644, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-2),
+                    "D": (-36.50624, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-3),
+                    "E": (-0.007374, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**2),
+                    "F": (-8.903471, pyunits.kJ / pyunits.mol),
+                    "G": (246.7945, pyunits.J / pyunits.mol /pyunits.K),
                     "H": (0, pyunits.kJ / pyunits.mol)
+                    # "A": (30.03235	, pyunits.J / pyunits.mol / pyunits.K),  # [4] #valid range  700-2000
+                    # "B": (8.772972, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),
+                    # "C": (-3.988133, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-2),
+                    # "D": (0.788313, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-3),
+                    # "E": (-0.741599, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**2),
+                    # "F": (-11.32468, pyunits.kJ / pyunits.mol),
+                    # "G": (236.1663, pyunits.J / pyunits.mol /pyunits.K),
+                    # "H": (0, pyunits.kJ / pyunits.mol)
                 },
                 "enth_mol_form_vap_comp_ref": (0, pyunits.kJ / pyunits.mol),  # [4]
                 "visc_d_Vap_comp_coeff": (3.8642e-05	, pyunits.Pa*pyunits.s)

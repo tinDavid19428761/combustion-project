@@ -67,7 +67,7 @@ configuration = {
              
         },
 
-        "uncombustible": {
+        "ash": {
             "type": Component,
             "elemental_composition": {"uncombustible":1}, #based on ash, mainly SiO2, Al2O3, CaO, Fe2O3, MgO
             "cp_mol_sol_comp": ConstantProperties.Constant,
@@ -268,7 +268,7 @@ configuration = {
 # Specifying phases
 "phases": {
     "Vap": {"type": VaporPhase, "equation_of_state": Ideal},#Pv=nT
-    "Sol": {"type": SolidPhase, "equation_of_state": Ideal}
+    # "Sol": {"type": SolidPhase, "equation_of_state": Ideal}
 
 },
 # Set base units of measurement
