@@ -52,7 +52,6 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
         self.component_list = Set(initialize=['H2O',
                                               'CO2',
                                               'O2',
-                                              'CO',
                                               'N2',
                                               'biomass',
                                               'uncombustible',
@@ -68,7 +67,6 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                                             ("Rbiomass", "Vap", "O2"),
                                             ("Rbiomass", "Sol", "biomass"),
                                             ("Rbiomass", "Vap", "N2"),
-                                            ("Rbiomass", "Vap", "CO"),
                                             ("Rbiomass", "Sol", "uncombustible"),
                                             ("Rbiomass", "Vap", "CH4"),
 
@@ -77,7 +75,6 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                                             ("RCH4", "Vap", "O2"),
                                             ("RCH4", "Sol", "biomass"),
                                             ("RCH4", "Vap", "N2"),
-                                            ("RCH4", "Vap", "CO"),
                                             ("RCH4", "Sol", "uncombustible"),
                                             ("RCH4", "Vap", "CH4"),
                                             ])
@@ -89,7 +86,6 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                                             ("Rbiomass", "Vap", "O2"): -6,
                                             ("Rbiomass", "Sol", "biomass"): -1,
                                             ("Rbiomass", "Vap", "N2"): 0,
-                                            ("Rbiomass", "Vap", "CO"): 0,
                                             ("Rbiomass", "Sol", "uncombustible"): 0,
                                             ("Rbiomass", "Vap", "CH4"): 0,
 
@@ -98,7 +94,6 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                                             ("RCH4", "Vap", "O2"): -2,
                                             ("RCH4", "Sol", "biomass"): 0,
                                             ("RCH4", "Vap", "N2"): 0,
-                                            ("RCH4", "Vap", "CO"): 0,
                                             ("RCH4", "Sol", "uncombustible"): 0,
                                             ("RCH4", "Vap", "CH4"): -1,
                                             })

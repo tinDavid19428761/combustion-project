@@ -54,8 +54,8 @@ from idaes.core.util.model_diagnostics import (
 # from custom_combustion_reactor import MultiCombReactor
 import unittest
 
-from biomass_comb_pp import configuration
-from multi_fuel_rp import MultiCombReactionParameterBlock
+from biomass_comb_properties import configuration
+from bm_comb_rp import MultiCombReactionParameterBlock
 
 m = ConcreteModel()
 
@@ -73,19 +73,41 @@ m.fs.react = StoichiometricReactor(
     has_pressure_change=False
 )
 
-m.fs.react.inlet.mole_frac_comp[0,"O2"].fix(0.28)
-m.fs.react.inlet.mole_frac_comp[0,"N2"].fix(0.7)
-m.fs.react.inlet.mole_frac_comp[0,"CH4"].fix(0.02)
+#to embed into comprehensive combustion reactor unit model
+# total_flow=1
+# biomass_frac=0.1
+M_bm = 100
+FAratio = 6.5
+mw_air = 28.96 #[g/mol]
+M_air = M_bm*FAratio
+N_air = M_air/mw_air
+
+ash_wt=0.02
+w_bm = 0.09
+mw_bm=configuration["components"]["biomass"]["parameter_data"]["mw"][0]
+mw_ash=configuration["components"]["uncombustible"]["parameter_data"]["mw"][0]
+N_bm = (M_bm/mw_bm)
+N_ash = ash_wt*(1-w_bm)*M_bm/mw_ash
+stoich_ash = N_ash/N_bm
+N_total = N_bm + N_air
+
+m.fs.react.config.reaction_package.rate_reaction_stoichiometry["Rbiomass", "Sol", "uncombustible"].fix(stoich_ash)
+
+#mole_frac_comp spec
+m.fs.react.inlet.mole_frac_comp[0,"O2"].fix(N_air*0.21/N_total)
+m.fs.react.inlet.mole_frac_comp[0,"N2"].fix(N_air*0.79/N_total)
+m.fs.react.inlet.mole_frac_comp[0,"CH4"].fix(1e-20)
 m.fs.react.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
 m.fs.react.inlet.mole_frac_comp[0,"H2O"].fix(1e-20)
-m.fs.react.inlet.mole_frac_comp[0,"biomass"].fix(1e-20)
+m.fs.react.inlet.mole_frac_comp[0,"biomass"].fix(N_bm/N_total)
 m.fs.react.inlet.mole_frac_comp[0,"uncombustible"].fix(1e-20)
-m.fs.react.inlet.flow_mol.fix(10)
+m.fs.react.inlet.flow_mol.fix(N_total)
 m.fs.react.inlet.temperature.fix(30+273.15)
 m.fs.react.inlet.pressure.fix(101325)
 
-m.fs.react.rate_reaction_extent[0,"RCH4"].fix(0.2)
-m.fs.react.rate_reaction_extent[0,"Rbioamss"].fix(0)
+
+m.fs.react.rate_reaction_extent[0,"RCH4"].fix(0)
+m.fs.react.rate_reaction_extent[0,"Rbiomass"].fix(N_bm/N_total)
 
 # m.fs.react.heat_duty[0].fix()
 m.fs.react.outlet.temperature.fix(300+273.15)
