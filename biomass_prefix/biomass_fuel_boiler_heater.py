@@ -36,8 +36,8 @@ from idaes.core import FlowsheetBlock
 # Import idaes logger to set output levels
 import idaes.logger as idaeslog
 from idaes.models.properties.modular_properties import GenericParameterBlock
-from  Ahuora_platform_stuff.biomass_comb_pp import configuration 
-from  biomass_combustion_rp import BMCombReactionParameterBlock
+from  biomass_comb_pp import configuration 
+from  biomass_combustion_rp_test import BMCombReactionParameterBlock
 
 #helmholtz import for water
 from idaes.models.properties.general_helmholtz import (
@@ -65,10 +65,10 @@ from idaes.core.util.model_statistics import degrees_of_freedom
 
 
 # creating reactor unit
-m.fs.M101 = Mixer(
-    property_package = m.fs.biomass_properties,
-    inlet_list=["biomass_feed"]
-)
+# m.fs.M101 = Mixer(
+#     property_package = m.fs.biomass_properties,
+#     inlet_list=["biomass_feed"]
+# )
 
 m.fs.R101 = StoichiometricReactor(
     property_package = m.fs.biomass_properties,
@@ -87,23 +87,22 @@ m.fs.H101 = Heater(
 
 #reactor flow sheet feed via mixer -> reactor -> product via separator
 
-m.fs.s01 = Arc(source=m.fs.M101.outlet,destination=m.fs.R101.inlet)
+# m.fs.s01 = Arc(source=m.fs.M101.outlet,destination=m.fs.R101.inlet)
 
-TransformationFactory("network.expand_arcs").apply_to(m)
+# TransformationFactory("network.expand_arcs").apply_to(m)
 
 
 flowTotal = 1
-extentR1 = 0.01*flowTotal #absolute extent of reaction
+extentR1 = 0.03*flowTotal #absolute extent of reaction
 
-m.fs.M101.biomass_feed.mole_frac_comp[0,"N2"].fix(0.5)
-m.fs.M101.biomass_feed.mole_frac_comp[0,"O2"].fix(0.47)
-m.fs.M101.biomass_feed.mole_frac_comp[0,"CO2"].fix(1e-20)
-m.fs.M101.biomass_feed.mole_frac_comp[0,"H2O"].fix(1e-20) 
-m.fs.M101.biomass_feed.mole_frac_comp[0,"CO"].fix(1e-20) 
-m.fs.M101.biomass_feed.mole_frac_comp[0,"biomass"].fix(0.03) 
-m.fs.M101.biomass_feed.temperature.fix(300)
-m.fs.M101.biomass_feed.pressure.fix(101325)
-m.fs.M101.biomass_feed.flow_mol.fix(flowTotal)
+m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.5)
+m.fs.R101.inlet.mole_frac_comp[0,"O2"].fix(0.47)
+m.fs.R101.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
+m.fs.R101.inlet.mole_frac_comp[0,"H2O"].fix(1e-20) 
+m.fs.R101.inlet.mole_frac_comp[0,"biomass"].fix(0.03) 
+m.fs.R101.inlet.temperature.fix(300)
+m.fs.R101.inlet.pressure.fix(101325)
+m.fs.R101.inlet.flow_mol.fix(flowTotal)
 
 # Add variables for extent of each reaction (mol/s)
 m.fs.R101.extent_R1 = Var(m.fs.time, initialize=extentR1, units=pyunits.mol/pyunits.s)
