@@ -1,5 +1,5 @@
 """
-reaction package for the combustion of biomass in air
+reaction package for the combustion of coal in air
 """
 from pyomo.environ import Expression
 
@@ -53,27 +53,27 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                                               'CO2',
                                               'O2',
                                               'N2',
-                                              'biomass',
+                                              'coal',
                                               'uncombustible',
                                               'CH4'
                                               ])
 
         # Reaction Index
-        self.rate_reaction_idx = Set(initialize=["Rbiomass","RCH4"])
-        self.uncombs_set = Set(initialize=["Rbiomass",])
+        self.rate_reaction_idx = Set(initialize=["Rcoal","RCH4"])
+        self.uncombs_set = Set(initialize=["Rcoal",])
     
-        self.reaction_set = Set(initialize=[("Rbiomass", "Vap", "H2O"),
-                                            ("Rbiomass", "Vap", "CO2"),
-                                            ("Rbiomass", "Vap", "O2"),
-                                            ("Rbiomass", "Sol", "biomass"),
-                                            ("Rbiomass", "Vap", "N2"),
-                                            ("Rbiomass", "Sol", "uncombustible"),
-                                            ("Rbiomass", "Vap", "CH4"),
+        self.reaction_set = Set(initialize=[("Rcoal", "Vap", "H2O"),
+                                            ("Rcoal", "Vap", "CO2"),
+                                            ("Rcoal", "Vap", "O2"),
+                                            ("Rcoal", "Sol", "coal"),
+                                            ("Rcoal", "Vap", "N2"),
+                                            ("Rcoal", "Sol", "uncombustible"),
+                                            ("Rcoal", "Vap", "CH4"),
 
                                             ("RCH4", "Vap", "H2O"),
                                             ("RCH4", "Vap", "CO2"),
                                             ("RCH4", "Vap", "O2"),
-                                            ("RCH4", "Sol", "biomass"),
+                                            ("RCH4", "Sol", "coal"),
                                             ("RCH4", "Vap", "N2"),
                                             ("RCH4", "Sol", "uncombustible"),
                                             ("RCH4", "Vap", "CH4"),
@@ -81,33 +81,33 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
 
         # Reaction Stoichiometry
         self.rate_reaction_stoichiometry = Var(self.reaction_set, initialize={
-                                            ("Rbiomass", "Vap", "H2O"): 5,
-                                            ("Rbiomass", "Vap", "CO2"): 6,
-                                            ("Rbiomass", "Vap", "O2"): -6,
-                                            ("Rbiomass", "Sol", "biomass"): -1,
-                                            ("Rbiomass", "Vap", "N2"): 0,
-                                            ("Rbiomass", "Sol", "uncombustible"): 0,
-                                            ("Rbiomass", "Vap", "CH4"): 0,
+                                            ("Rcoal", "Vap", "H2O"): 0.161580373,
+                                            ("Rcoal", "Vap", "CO2"): 0.715621569,
+                                            ("Rcoal", "Vap", "O2"): -0.643121569,
+                                            ("Rcoal", "Sol", "coal"): -1,
+                                            ("Rcoal", "Vap", "N2"): 0.005,
+                                            ("Rcoal", "Sol", "uncombustible"): 0.03,
+                                            ("Rcoal", "Vap", "CH4"): 0,
 
                                             ("RCH4", "Vap", "H2O"): 2,
                                             ("RCH4", "Vap", "CO2"): 1,
                                             ("RCH4", "Vap", "O2"): -2,
-                                            ("RCH4", "Sol", "biomass"): 0,
+                                            ("RCH4", "Sol", "coal"): 0,
                                             ("RCH4", "Vap", "N2"): 0,
                                             ("RCH4", "Sol", "uncombustible"): 0,
                                             ("RCH4", "Vap", "CH4"): -1,
                                             })
         self.rate_reaction_stoichiometry.fix()
         
-        # self.reactant_list=Set(initialize=["biomass","O2",'CH4'])
+        # self.reactant_list=Set(initialize=["coal","O2",'CH4'])
         self.limit_reactant_dict = Param(self.rate_reaction_idx, initialize={
-            "Rbiomass": "biomass",
+            "Rcoal": "coal",
             "RCH4": "CH4",
         },
         within=Any)
 
-        dh_rxn_dict = {"Rbiomass": -2749556.40, # @ w=9%, h=6% ==> ncv=-2749556.40 (pg.7): https://www.mbie.govt.nz/dmsdocument/125-industrial-bioenergy-
-                       "RCH4": -802125 # (J/mol) engineering toolbox methane LHV
+        dh_rxn_dict = {"Rcoal": -328066.056, 
+                       "RCH4": -802125 
                        } 
         
         self.dh_rxn = Var(self.rate_reaction_idx, 

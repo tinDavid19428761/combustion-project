@@ -58,7 +58,7 @@ configuration = {
             'valid_phase_types': PT.solidPhase,
             "parameter_data": {
                 "mw": (13.67, pyunits.g / pyunits.mol),
-                "cp_mol_sol_comp_coeff": (243.2091, pyunits.J/pyunits.mol/pyunits.K),
+                "cp_mol_sol_comp_coeff": (17.77024, pyunits.J/pyunits.mol/pyunits.K),
                 "dens_mol_sol_comp_coeff": (102139.98, pyunits.mol/pyunits.m**3),  #10.1021/acsomega.2c00505
                 "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),
                 "enrt_mol_form_sol_comp_ref": (0, pyunits.J/pyunits.mol/pyunits.K),

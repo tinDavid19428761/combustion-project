@@ -28,21 +28,19 @@ _log = idaeslog.getLogger(__name__)
 configuration = {
     # Specifying components
     "components": {
-        "biomass": { #woody biomass
+        "coal": { 
             "type": Component,
-            "elemental_composition": {"C":6, "H": 10, "O": 5}, #cellulose composition C6-H10-O5
+            "elemental_composition": {"coal":1}, 
             "enth_mol_sol_comp": ConstantProperties.Constant,
             "cp_mol_sol_comp": ConstantProperties.Constant,
             "dens_mol_sol_comp": ConstantProperties.Constant,
-            "visc_d_phase_comp": {"Sol": ConstantProperties.Constant},
             'valid_phase_types': PT.solidPhase,
             "parameter_data": {
-                "mw": (162.1394, pyunits.g / pyunits.mol),
-                "cp_mol_sol_comp_coeff": (243.2091, pyunits.J/pyunits.mol/pyunits.K),
-                "dens_mol_sol_comp_coeff": (2960.415544, pyunits.mol/pyunits.m**3), 
+                "mw": (13.67, pyunits.g / pyunits.mol),
+                "cp_mol_sol_comp_coeff": (17.77024, pyunits.J/pyunits.mol/pyunits.K),
+                "dens_mol_sol_comp_coeff": (102139.98, pyunits.mol/pyunits.m**3), 
                 "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),
-                "enrt_mol_form_sol_comp_ref": (158.1, pyunits.J/pyunits.mol/pyunits.K),
-                "visc_d_Sol_comp_coeff": (3.2833e-05, pyunits.Pa*pyunits.s)  
+                "enrt_mol_form_sol_comp_ref": (0, pyunits.J/pyunits.mol/pyunits.K),
             }, 
         },
         "uncombustible": { #wood ash
