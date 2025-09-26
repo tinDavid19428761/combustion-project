@@ -25,9 +25,6 @@ m.fs.react = StoichiometricReactor(
     has_pressure_change=False
 )
 
-#to embed into comprehensive combustion reactor unit model
-# total_flow=1
-# biomass_frac=0.1
 M_coal = 100 # [g/s]
 AFratio = 7.79
 mw_air = 28.96 #[g/mol]

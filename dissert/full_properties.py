@@ -54,7 +54,7 @@ configuration = {
             'valid_phase_types': PT.solidPhase,
             "parameter_data": {
                 "mw": (162.1394, pyunits.g / pyunits.mol),
-                "cp_mol_sol_comp_coeff": (243.2091, pyunits.J/pyunits.mol/pyunits.K),
+                "cp_mol_sol_comp_coeff": (243.2091, pyunits.J/pyunits.mol/pyunits.K), #1500 J/kg/K
                 "dens_mol_sol_comp_coeff": (2960.415544, pyunits.mol/pyunits.m**3), 
                 "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),
                 "enrt_mol_form_sol_comp_ref": (158.1, pyunits.J/pyunits.mol/pyunits.K),
@@ -70,7 +70,7 @@ configuration = {
             'valid_phase_types': PT.solidPhase,
             "parameter_data": {
                 "mw": (13.67, pyunits.g / pyunits.mol),
-                "cp_mol_sol_comp_coeff": (243.2091, pyunits.J/pyunits.mol/pyunits.K),
+                "cp_mol_sol_comp_coeff": (17.7702447, pyunits.J/pyunits.mol/pyunits.K), #1300 J/kg/K
                 "dens_mol_sol_comp_coeff": (95102.79844, pyunits.mol/pyunits.m**3), 
                 "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),
                 "enrt_mol_form_sol_comp_ref": (0, pyunits.J/pyunits.mol/pyunits.K),
@@ -85,7 +85,7 @@ configuration = {
             'valid_phase_types': PT.liquidPhase,
             "parameter_data": {
                 "mw": (18.02, pyunits.g / pyunits.mol), 
-                "cp_mol_liq_comp_coeff": (100, pyunits.J/pyunits.mol/pyunits.K),
+                "cp_mol_liq_comp_coeff": (75.684, pyunits.J/pyunits.mol/pyunits.K),
                 "dens_mol_liq_comp_coeff": (76471.01, pyunits.mol/pyunits.m**3),
                 "enth_mol_form_liq_comp_ref": (0, pyunits.kJ/pyunits.mol),  
             },
@@ -103,7 +103,6 @@ configuration = {
                 "dens_mol_sol_comp_coeff": (2960.415544, pyunits.mol/pyunits.m**3), 
                 "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),       
                 "enrt_mol_form_sol_comp_ref": (158.1, pyunits.J/pyunits.mol/pyunits.K), 
-                "visc_d_Sol_comp_coeff": (3.2833e-05, pyunits.Pa*pyunits.s)  
             },   
         },
         "O2": {

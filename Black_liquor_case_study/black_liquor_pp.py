@@ -73,8 +73,8 @@ configuration = {
             'valid_phase_types': PT.liquidPhase,
             "parameter_data": {
                 "mw": (18.02, pyunits.g / pyunits.mol),  # water
-                "cp_mol_liq_comp_coeff": (100, pyunits.J/pyunits.mol/pyunits.K), #approx as water
-                "dens_mol_liq_comp_coeff": (76471.01, pyunits.mol/pyunits.m**3),
+                "cp_mol_liq_comp_coeff": (75.684, pyunits.J/pyunits.mol/pyunits.K), #approx as water
+                "dens_mol_liq_comp_coeff": (76436.43518, pyunits.mol/pyunits.m**3),
                 "enth_mol_form_liq_comp_ref": (0, pyunits.kJ/pyunits.mol),  
                 # "bl_liqids": (0.7, pyunits.g/pyunits.g) # for density and enthalpy calcs
             },
