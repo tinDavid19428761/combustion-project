@@ -193,7 +193,6 @@ tear_guesses = {
         (0, "O2"): 0.22,
         (0, "CO2"): 0.06,
         (0, "H2O"): 0.05,
-        # (0, "CO"): 1e-20,
         (0, "CH4"): 1e-20,
         (0, "biomass"): 1e-20,
         (0, "uncombustible"): 1e-20,
@@ -223,7 +222,7 @@ m.fs.boiler_hx.shell_outlet.temperature.fix(400)
 solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)
 
-m.fs.boiler_eff = Expression(
+m.fs.boiler_eff = Expression( 
     expr = (m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/(m.fs.fire_side.control_volume.rate_reaction_extent[0,"Rbiomass"]*-m.fs.fire_side.reaction_package.dh_rxn["Rbiomass"])
 )
 m.fs.biomass_mass_flow = Expression(#units g/s 
