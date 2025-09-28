@@ -101,11 +101,11 @@ class BMCombReactionParameterData(ReactionParameterBlock):
         # self.ncv = Var(initialize=-(self.gcv*(1-self.w)-2.447*self.w-2.447*self.h*9.01*(1-self.w))*162.1394*1000, units=pyunits.J/pyunits.mol)
         self.ncv = Var(initialize=-(self.gcv*(1-self.w)-2.447*self.w-2.447*self.h*9.01*(1-self.w))*162.1394*1000)
 
-        @Constraint()
-        def ncv_eqn(b):
-            b.ncv == (
-                -(b.gcv*(1-b.w)-2.447*b.w-2.447*b.h*9.01*(1-b.w))*162.1394*1000
-            )
+        # @Constraint()
+        # def ncv_eqn(b):
+        #     b.ncv == (
+        #         -(b.gcv*(1-b.w)-2.447*b.w-2.447*b.h*9.01*(1-b.w))*162.1394*1000
+        #     )
             
             
 

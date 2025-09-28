@@ -67,24 +67,24 @@ configuration = {
              
         },
 
-        # "ash": {
-        #     "type": Component,
-        #     "elemental_composition": {"uncombustible":1}, #based on ash, mainly SiO2, Al2O3, CaO, Fe2O3, MgO
-        #     "cp_mol_sol_comp": ConstantProperties.Constant,
-        #     "enth_mol_sol_comp": ConstantProperties.Constant,
-        #     "dens_mol_sol_comp": ConstantProperties.Constant,
-        #     "visc_d_phase_comp": {"Sol": ConstantProperties.Constant},
-        #     'valid_phase_types': PT.solidPhase,
-        #     "parameter_data": {
-        #         "mw": (66.37, pyunits.g / pyunits.mol),
-        #         "cp_mol_sol_comp_coeff": (68.27, pyunits.J/pyunits.mol/pyunits.K), #Cp weighted average by composition of constituents
-        #         "dens_mol_sol_comp_coeff": (2960.415544, pyunits.mol/pyunits.m**3), #ignore
-        #         "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),          #ignore
-        #         "enrt_mol_form_sol_comp_ref": (158.1, pyunits.J/pyunits.mol/pyunits.K), #ignoer
-        #         "visc_d_Sol_comp_coeff": (3.2833e-05, pyunits.Pa*pyunits.s)  
-        #     },   
+        "ash": {
+            "type": Component,
+            "elemental_composition": {"uncombustible":1}, #based on ash, mainly SiO2, Al2O3, CaO, Fe2O3, MgO
+            "cp_mol_sol_comp": ConstantProperties.Constant,
+            "enth_mol_sol_comp": ConstantProperties.Constant,
+            "dens_mol_sol_comp": ConstantProperties.Constant,
+            "visc_d_phase_comp": {"Sol": ConstantProperties.Constant},
+            'valid_phase_types': PT.solidPhase,
+            "parameter_data": {
+                "mw": (66.37, pyunits.g / pyunits.mol),
+                "cp_mol_sol_comp_coeff": (68.27, pyunits.J/pyunits.mol/pyunits.K), #Cp weighted average by composition of constituents
+                "dens_mol_sol_comp_coeff": (2960.415544, pyunits.mol/pyunits.m**3), #ignore
+                "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),          #ignore
+                "enrt_mol_form_sol_comp_ref": (158.1, pyunits.J/pyunits.mol/pyunits.K), #ignoer
+                "visc_d_Sol_comp_coeff": (3.2833e-05, pyunits.Pa*pyunits.s)  
+            },   
 
-        # },
+        },
 
         "O2": {
             "type": Component,
@@ -170,32 +170,32 @@ configuration = {
 
             },
         },
-        # "CO": {
-        #     "type": Component,
-        #     "elemental_composition": {"O":1, "C":1},
-        #     "enth_mol_ig_comp": NIST,
-        #     "cp_mol_ig_comp": NIST,
-        #     "visc_d_phase_comp": {"Vap": ConstantProperties.Constant},
-        #     'valid_phase_types': PT.vaporPhase,
-        #     "parameter_data": {
-        #         "mw": (28.0101, pyunits.g / pyunits.mol),  # [4]
-        #         "pressure_crit": (34.9875e5, pyunits.Pa),  # [[6]
-        #         "temperature_crit": (134.45, pyunits.K),  # [6]
-        #         "cp_mol_ig_comp_coeff": { #(valid range: 298-1300K)
-        #             "A": (25.56759	, pyunits.J / pyunits.mol / pyunits.K),  # [4] 
-        #             "B": (6.096130, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),
-        #             "C": (4.054656, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-2),
-        #             "D": (-2.671301	, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-3),
-        #             "E": (0.131021, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**2),
-        #             "F": (-118.0089, pyunits.kJ / pyunits.mol),
-        #             "G": (227.3665, pyunits.J / pyunits.mol /pyunits.K),
-        #             "H": (-110.5271, pyunits.kJ / pyunits.mol),
-        #         },
-        #         "enth_mol_form_vap_comp_ref": (0, pyunits.kJ / pyunits.mol),  # [4]
-        #         "visc_d_Vap_comp_coeff": (2.5942e-05	, pyunits.Pa*pyunits.s)
+        "CO": {
+            "type": Component,
+            "elemental_composition": {"O":1, "C":1},
+            "enth_mol_ig_comp": NIST,
+            "cp_mol_ig_comp": NIST,
+            "visc_d_phase_comp": {"Vap": ConstantProperties.Constant},
+            'valid_phase_types': PT.vaporPhase,
+            "parameter_data": {
+                "mw": (28.0101, pyunits.g / pyunits.mol),  # [4]
+                "pressure_crit": (34.9875e5, pyunits.Pa),  # [[6]
+                "temperature_crit": (134.45, pyunits.K),  # [6]
+                "cp_mol_ig_comp_coeff": { #(valid range: 298-1300K)
+                    "A": (25.56759	, pyunits.J / pyunits.mol / pyunits.K),  # [4] 
+                    "B": (6.096130, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-1),
+                    "C": (4.054656, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-2),
+                    "D": (-2.671301	, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**-3),
+                    "E": (0.131021, pyunits.J * pyunits.mol**-1 * pyunits.K**-1 * pyunits.kiloK**2),
+                    "F": (-118.0089, pyunits.kJ / pyunits.mol),
+                    "G": (227.3665, pyunits.J / pyunits.mol /pyunits.K),
+                    "H": (-110.5271, pyunits.kJ / pyunits.mol),
+                },
+                "enth_mol_form_vap_comp_ref": (0, pyunits.kJ / pyunits.mol),  # [4]
+                "visc_d_Vap_comp_coeff": (2.5942e-05	, pyunits.Pa*pyunits.s)
 
-        #     },
-        # },
+            },
+        },
         "H2O": {
            "type": Component,
            "elemental_composition":{"H":2,"O":1},
