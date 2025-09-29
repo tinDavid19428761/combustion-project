@@ -81,7 +81,7 @@ m.fs.R101.wcon.fix(0.09)
 # m.fs.R101.reaction_package.dh_rxn["Rbiomass"].fix(-2.7804e+06)
 
 # m.fs.R101.dh_rxn_Rbiomass.fix(-2.7804e+06)
-m.fs.R101.dh_rxn_RCH4.fix()
+m.fs.R101.dh_rxn_RCH4.fix(-802125)
 
 
 # m.fs.R101.reaction_package.dh_rxn["Rbiomass"].unfix()

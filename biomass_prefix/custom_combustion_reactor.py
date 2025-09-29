@@ -35,8 +35,6 @@ from idaes.core.util.config import (
     is_reaction_parameter_block,
 )
 
-# from property_packages.combustion.biomass_combustion_rp import BMCombReactionParameterBlock
-from Ahuora_platform_stuff.multi_fuel_rp  import MultiCombReactionParameterBlock
 from biomass_combustion_rp import BMCombReactionParameterBlock
 
 
@@ -211,7 +209,7 @@ see property package for documentation.}""",
         """
         # Call UnitModel.build to setup dynamics
         super(MultiCombReactorData, self).build()
-        self.reaction_package = MultiCombReactionParameterBlock(property_package=self.config.property_package)
+        self.reaction_package = BMCombReactionParameterBlock(property_package=self.config.property_package)
         # Build Control Volume
         self.control_volume = ControlVolume0DBlock(
             dynamic=self.config.dynamic,
@@ -287,8 +285,8 @@ see property package for documentation.}""",
 
         @self.Constraint(self.reaction_package.uncombs_set,)
         def ash_mass_mole_eqn(b,u):
-            b.reaction_package.rate_reaction_stoichiometry[u,"Sol","uncombustible"].unfix()
-            return getattr(b, f"ash_mass_{u}")*(162.1394/66.37) == b.reaction_package.rate_reaction_stoichiometry[u,"Sol","uncombustible"]
+            b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"].unfix()
+            return getattr(b, f"ash_mass_{u}")*(162.1394/66.37) == b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"]
         
         @self.Constraint(self.reaction_package.rate_reaction_idx)
         def dh_rxn_link(b,r):
@@ -298,7 +296,7 @@ see property package for documentation.}""",
         #hard coded constraint just for biomassbiomass heating value [turn into callable method?]
         @self.Constraint()
         def ncv_eqn(b):
-            return b.dh_rxn_Rbiomass == (
+            return b.dh_rxn_R1 == (
                 -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000
             )
         
