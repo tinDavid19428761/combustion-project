@@ -1,21 +1,21 @@
 # Verification test for biomass combustion stoichiometry
 
-from pyomo.environ import ConcreteModel, SolverFactory
-from idaes.models.unit_models import StoichiometricReactor, Mixer
 from idaes.core.util.model_statistics import degrees_of_freedom
-from idaes.core import FlowsheetBlock
+
 import idaes.logger as idaeslog
+
+from pyomo.environ import ConcreteModel, SolverFactory
+from idaes.core import FlowsheetBlock
 from idaes.models.properties.modular_properties import GenericParameterBlock
-from dissert.bm_comb_properties import configuration
-from bm_comb_rp import BMCombReactionParameterBlock
+from bm_comb_properties import configuration
+from bm_comb_rp import BMCombRxnParameterBlock
+from idaes.models.unit_models import StoichiometricReactor
 
 m = ConcreteModel()
-
 m.fs = FlowsheetBlock(dynamic=False)
 
 m.fs.properties = GenericParameterBlock(**configuration)
-m.fs.reaction = BMCombReactionParameterBlock(property_package=m.fs.properties)
-
+m.fs.reaction = BMCombRxnParameterBlock(property_package=m.fs.properties)
 m.fs.react = StoichiometricReactor(
     property_package = m.fs.properties,
     reaction_package = m.fs.reaction,
