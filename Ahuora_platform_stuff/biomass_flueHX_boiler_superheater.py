@@ -207,37 +207,37 @@ seq.set_guesses_for(m.fs.boiler_hx.shell_inlet, tear_guesses)
 def function(unit):
     unit.initialize(outlvl=idaeslog.INFO)
 print(degrees_of_freedom(m))
-assert degrees_of_freedom(m) == 0
+# assert degrees_of_freedom(m) == 0
 seq.run(m, function)
 
-# dt = DiagnosticsToolbox(m)
-# dt.report_structural_issues()
-# dt.display_underconstrained_set()
-# dt.display_components_with_inconsistent_units()
+dt = DiagnosticsToolbox(m)
+dt.report_structural_issues()
+dt.display_underconstrained_set()
+dt.display_components_with_inconsistent_units()
 
-#pre-solve [actual] re-specification
-m.fs.fire_side.inlet.flow_mol.unfix()
-m.fs.boiler_hx.shell_outlet.temperature.fix(400)
+# #pre-solve [actual] re-specification
+# m.fs.fire_side.inlet.flow_mol.unfix()
+# m.fs.boiler_hx.shell_outlet.temperature.fix(400)
 
-solver=SolverFactory("ipopt")
-status=solver.solve(m,tee=True)
+# solver=SolverFactory("ipopt")
+# status=solver.solve(m,tee=True)
 
-m.fs.boiler_eff = Expression( 
-    expr = (m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/(m.fs.fire_side.control_volume.rate_reaction_extent[0,"Rbiomass"]*-m.fs.fire_side.reaction_package.dh_rxn["Rbiomass"])
-)
-m.fs.biomass_mass_flow = Expression(#units g/s 
-    expr = (m.fs.fire_side.inlet.mole_frac_comp[0,"biomass"])*(m.fs.fire_side.inlet.flow_mol[0])*m.fs.biomass_properties.biomass.mw
-)
+# m.fs.boiler_eff = Expression( 
+#     expr = (m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/(m.fs.fire_side.control_volume.rate_reaction_extent[0,"Rbiomass"]*-m.fs.fire_side.reaction_package.dh_rxn["Rbiomass"])
+# )
+# m.fs.biomass_mass_flow = Expression(#units g/s 
+#     expr = (m.fs.fire_side.inlet.mole_frac_comp[0,"biomass"])*(m.fs.fire_side.inlet.flow_mol[0])*m.fs.biomass_properties.biomass.mw
+# )
 
-#results
-m.fs.fire_side.report()
-m.fs.superheater.report()
-m.fs.boiler_hx.report()
-m.fs.bdw_sep.report()
-m.fs.ash_sep.report()
-print(f"    Boiler Efficiency: {value(m.fs.boiler_eff)*100:.2f}%")
-print(f"    casing heat loss:{value(m.fs.fire_side.heat_duty[0]):.2f} J/s")
-print(f"    biomass demand: {value(m.fs.biomass_mass_flow):.3f} g/s")
-print(value(m.fs.fire_side.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","ash"]))
+# #results
+# m.fs.fire_side.report()
+# m.fs.superheater.report()
+# m.fs.boiler_hx.report()
+# m.fs.bdw_sep.report()
+# m.fs.ash_sep.report()
+# print(f"    Boiler Efficiency: {value(m.fs.boiler_eff)*100:.2f}%")
+# print(f"    casing heat loss:{value(m.fs.fire_side.heat_duty[0]):.2f} J/s")
+# print(f"    biomass demand: {value(m.fs.biomass_mass_flow):.3f} g/s")
+# print(value(m.fs.fire_side.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","uncombustible"]))
 
 
