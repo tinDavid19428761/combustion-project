@@ -140,6 +140,8 @@ m.fs.fire_side.wcon.fix(0.09)
 m.fs.fire_side.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","uncombustible"].unfix()
 m.fs.fire_side.ash_mass_Rbiomass.fix(0.03)
 
+m.fs.fire_side.dh_rxn_RCH4.fix(-802125)
+
 #specifying combustion reactor variables
 m.fs.fire_side.conversion_Rbiomass.fix(1)
 m.fs.fire_side.conversion_RCH4.fix(0.5)
