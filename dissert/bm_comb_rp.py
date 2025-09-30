@@ -29,7 +29,7 @@ from idaes.core.util.misc import add_object_reference
 _log = logging.getLogger(__name__)
 
 
-@declare_process_block_class("MultiCombReactionParameterBlock")
+@declare_process_block_class("BMCombReactionParameterBlock")
 class MultiCombReactionParameterData(ReactionParameterBlock):
     """
     Property Parameter Block Class
