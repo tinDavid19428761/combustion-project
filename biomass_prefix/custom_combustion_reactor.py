@@ -262,7 +262,6 @@ see property package for documentation.}""",
         self.ohtc = Var(initialize=250, units=pyunits.J/pyunits.m**2/pyunits.K/pyunits.s)
         self.surface_area = Var(initialize=0.02, units=pyunits.m**2, doc="casing outer surface area")
         self.surface_temp = Var(initialize=55+273.12, units=pyunits.K, doc="outer skin temperature of boiler")
-
             
         self.hcon=Var(initialize=0.06) #concentration of hydrogen as a percentage of weight, h=6%
         self.wcon=Var(initialize=0.09) #water content of fuel as percentage of weight

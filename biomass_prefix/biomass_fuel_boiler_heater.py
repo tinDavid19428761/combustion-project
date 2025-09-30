@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Sep  4 14:18:30 2023
-
-@author: bjl25
-
-validation notes:
-validated in excel
-heat of reaction validated as heat of formations
-temperature raise and boiling validated
+custom combustion reactor unit model test:::
 """
 #Importing required pyomo and idaes components
 from pyomo.environ import (
@@ -88,6 +81,7 @@ m.fs.R101.ohtc.fix(100)
 m.fs.R101.surface_area.fix(0.1)
 m.fs.R101.surface_temp.fix(60)
 m.fs.R101.ash_mass_R1.fix(0.02)
+# m.fs.R101.heat_duty.fix(-100000)
 
 
 m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.7)
@@ -99,6 +93,7 @@ m.fs.R101.inlet.mole_frac_comp[0,"ash"].fix(1e-20)
 m.fs.R101.inlet.temperature.fix(300)
 m.fs.R101.inlet.pressure.fix(101325)
 m.fs.R101.inlet.flow_mol.fix(flowTotal)
+
 
 # m.fs.R101.outlet.temperature.fix(400)
 # m.fs.R101.rate_reaction_extent[0,"R1"].fix(extentR1)
