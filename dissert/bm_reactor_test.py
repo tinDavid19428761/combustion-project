@@ -1,15 +1,15 @@
 # Verification test for biomass combustion stoichiometry
 
 from idaes.core.util.model_statistics import degrees_of_freedom
-
 import idaes.logger as idaeslog
 
-from pyomo.environ import ConcreteModel, SolverFactory
+from pyomo.environ import ConcreteModel, SolverFactory, TransformationFactory, value
+from pyomo.network import Arc
 from idaes.core import FlowsheetBlock
 from idaes.models.properties.modular_properties import GenericParameterBlock
 from bm_comb_properties import configuration
 from bm_comb_rp import BMCombRxnParameterBlock
-from idaes.models.unit_models import StoichiometricReactor
+from idaes.models.unit_models import StoichiometricReactor,Mixer
 
 m = ConcreteModel()
 m.fs = FlowsheetBlock(dynamic=False)
@@ -24,6 +24,14 @@ m.fs.react = StoichiometricReactor(
     has_pressure_change=False
 )
 
+
+# m.fs.mixer = Mixer(
+#     property_package = m.fs.properties,
+# )
+
+# m.fs.stream1 = Arc(source=m.fs.mixer.outlet, destination=m.fs.react.inlet)
+# TransformationFactory("network.expand_arcs").apply_to(m)
+
 #to embed into comprehensive combustion reactor unit model
 # total_flow=1
 # biomass_frac=0.1
@@ -37,6 +45,8 @@ ash_wt=0.02
 w_bm = 0.09
 mw_bm=configuration["components"]["biomass"]["parameter_data"]["mw"][0]
 mw_ash=configuration["components"]["uncombustible"]["parameter_data"]["mw"][0]
+# print(value(m.fs.properties.config.components["CO2"]["parameter_data"]["mw"][0])) #method for ppkg proper
+
 N_bm = (M_bm/mw_bm)
 N_ash = ash_wt*(1-w_bm)*M_bm/mw_ash
 stoich_ash = N_ash/N_bm
@@ -78,3 +88,5 @@ m.fs.react.report()
 # m.fs.react.display()
 
 # print(value(m.fs.react.rate_reaction_extent))
+print(m.fs.reaction.rate_reaction_stoichiometry["Rbiomass", "Vap", "O2"])
+print(value(m.fs.properties.config.components["CO2"]["parameter_data"]["mw"][0]))

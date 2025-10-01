@@ -26,11 +26,10 @@ from idaes.core import PhaseType as PT
 _log = idaeslog.getLogger(__name__)
 
 configuration = {
-    # Specifying components
     "components": {
         "biomass": { #woody biomass
             "type": Component,
-            "elemental_composition": {"C":6, "H": 10, "O": 5}, #cellulose composition C6-H10-O5
+            "elemental_composition": {"C":6, "H": 10, "O": 5},
             "enth_mol_sol_comp": ConstantProperties.Constant,
             "cp_mol_sol_comp": ConstantProperties.Constant,
             "dens_mol_sol_comp": ConstantProperties.Constant,

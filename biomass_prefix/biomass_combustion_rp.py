@@ -60,6 +60,10 @@ class BMCombReactionParameterData(ReactionParameterBlock):
         # Reaction Index
         self.rate_reaction_idx = Set(initialize=["R1"])
         self.uncombs_set = Set(initialize=["R1",])
+        self.products = Set(initialize=[("Vap","CO2"),
+                                        ("Vap","H2O"),
+                                        ("Vap","N2"),
+                                        ("Sol","ash"),])
 
         self.reaction_set = Set(initialize=[("R1", "Vap", "H2O"),
                                             ("R1", "Vap", "CO2"),
@@ -68,15 +72,17 @@ class BMCombReactionParameterData(ReactionParameterBlock):
                                             ("R1", "Vap", "N2"),
                                             ("R1", "Sol", "ash"),
                                             ])
-        # biomass combustion stoichiometry based on cellulose
-        self.rate_reaction_stoichiometry = Var(self.reaction_set, initialize={
+        
+        # initialization stoichiometry that is known to be mass-balanced (as this is a key assumption when re-calculating with ash composition specification) 
+        self.stoich_init = Param(self.reaction_set, initialize={
                                             ("R1", "Vap", "H2O"): 5,
                                             ("R1", "Vap", "CO2"): 6,
                                             ("R1", "Vap", "O2"): -6,
                                             ("R1", "Sol", "biomass"): -1,
                                             ("R1", "Vap", "N2"): 0,
-                                            ("R1", "Sol", "ash"): 0.01,
+                                            ("R1", "Sol", "ash"): 0,
                                             })
+        self.rate_reaction_stoichiometry = Var(self.reaction_set, initialize=self.stoich_init)
         self.rate_reaction_stoichiometry.fix()
         
         # self.reactant_list=Set(initialize=["biomass"])

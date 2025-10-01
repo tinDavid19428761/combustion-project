@@ -16,7 +16,7 @@ Standard IDAES STOICHIOMETRIC reactor model
 """
 
 # Import Pyomo libraries
-from pyomo.environ import Reference, Var, Param, units as pyunits
+from pyomo.environ import Reference, Var, Param, units as pyunits, value
 from pyomo.common.config import ConfigBlock, ConfigValue, In, Bool
 
 # Import IDAES cores
@@ -282,11 +282,30 @@ see property package for documentation.}""",
 
         """ #new constraints: returns getattr for setattr variables """
 
-        @self.Constraint(self.reaction_package.uncombs_set,)
+
+
+        self.init_stoichs = Param()
+
+        @self.Constraint(self.reaction_package.uncombs_set)
         def ash_mass_mole_eqn(b,u):
-            b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"].unfix()
+            # return b.reaction_package.rate_reaction_stoichiometry[u,] ==(
+            
+            # b.config.property_package.config.components[j]["parameter_data"]["mw"][0]
+            # *b.reaction_package.stoich_init[u,p,j]
+            # for p,j in b.reaction_package.products
+
+
+            
+            b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"].unfix() #unsure if u, and pr in key will work at same time
+            
+            
+
+
             return getattr(b, f"ash_mass_{u}")*(162.1394/66.37) == b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"]
-        
+
+
+
+
         @self.Constraint(self.reaction_package.rate_reaction_idx)
         def dh_rxn_link(b,r):
             b.reaction_package.dh_rxn[r].unfix()

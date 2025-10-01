@@ -31,24 +31,10 @@ _log = logging.getLogger(__name__)
 
 @declare_process_block_class("BMCombRxnParameterBlock")
 class MultiCombReactionParameterData(ReactionParameterBlock):
-    """
-    Property Parameter Block Class
-    Contains parameters and indexing sets associated with properties for
-    superheated steam.
-    """
-
     def build(self):
-        '''
-        Callable method for Block construction.
-        '''
         super(MultiCombReactionParameterData, self).build()
-
         self._reaction_block_class = BMReactionBlock
-
-        # List of valid phases in property package
         self.phase_list = Set(initialize=['Vap', 'Sol'])
-
-        # Component list - a list of component identifiers
         self.component_list = Set(initialize=['H2O',
                                               'CO2',
                                               'O2',
@@ -61,6 +47,10 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
         # Reaction Index
         self.rate_reaction_idx = Set(initialize=["Rbiomass","RCH4"])
         self.uncombs_set = Set(initialize=["Rbiomass",])
+        self.products = Set(initialize=[("Vap","CO2"),
+                                        ("Vap","H2O"),
+                                        ("Vap","N2"),
+                                        ("Sol","uncombustible"),])
     
         self.reaction_set = Set(initialize=[("Rbiomass", "Vap", "H2O"),
                                             ("Rbiomass", "Vap", "CO2"),
