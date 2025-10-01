@@ -276,32 +276,44 @@ see property package for documentation.}""",
 
         # self.ash_mass = Var(self.reaction_package.uncombs_set,initialize=0.01, units=pyunits.g/pyunits.g)
         for u in self.reaction_package.uncombs_set:
-            setattr(self,f"ash_mass_{u}", Var(initialize=0.01, units=pyunits.g/pyunits.g))
+            setattr(self,f"ash_mass_{u}", Var(initialize=0.02 , units=pyunits.g/pyunits.g))
 
+            # mw = self.config.property_package.config.components
+            # rrstoich = self.reaction_package.rate_reaction_stoichiometry #actual stoichiometry variables
+            # inistoich = self.reaction_package.stoich_init #initialised constants
+            # new_ash = getattr(self, f"ash_mass_{u}")-inistoich[(u,"Sol","ash")] 
+            # pre_ash = sum(mw[s]["parameter_data"]["mw"][0]*inistoich[u,k,s] for k,s in self.reaction_package.products)
+            # ratio = pre_ash/(pre_ash+(new_ash)*mw["ash"]["parameter_data"]["mw"][0])
+            # inistoich[(u,"Sol","ash")] +=new_ash
 
-
-        """ #new constraints: returns getattr for setattr variables """
-
-
-
-        self.init_stoichs = Param()
-
-        @self.Constraint(self.reaction_package.uncombs_set)
-        def ash_mass_mole_eqn(b,u):
-            # return b.reaction_package.rate_reaction_stoichiometry[u,] ==(
+        # for p,j in self.reaction_package.products:
+        @self.Constraint(self.reaction_package.uncombs_set,self.reaction_package.products)
+        def ash_mass_inter(b,u,p,j):
+            fuel = self.reaction_package.limit_reactant_dict[u]
+            mw = self.config.property_package.config.components
+            rrstoich = self.reaction_package.rate_reaction_stoichiometry #actual stoichiometry variables
+            inistoich = self.reaction_package.stoich_init #initialised constants
+            new_ash = (getattr(self, f"ash_mass_{u}")*162.1394/66.37)-inistoich[(u,"Sol","ash")] #mw["ash"]["parameter_data"]["mw"][0]*self.config.property_package.config.components[fuel]["parameter_data"]["mw"][0]
+            pre_ash = sum(mw[s]["parameter_data"]["mw"][0]*inistoich[u,k,s] for k,s in self.reaction_package.products)
+            ratio = pre_ash/(pre_ash+(new_ash)*mw["ash"]["parameter_data"]["mw"][0])
+            inistoich[(u,"Sol","ash")] =new_ash+inistoich[(u,"Sol","ash")]
+            rrstoich[u,p,j].unfix()
+            return rrstoich[u,p,j] == inistoich[u,p,j]*ratio
             
-            # b.config.property_package.config.components[j]["parameter_data"]["mw"][0]
-            # *b.reaction_package.stoich_init[u,p,j]
-            # for p,j in b.reaction_package.products
+
+
+        # @self.Constraint(self.reaction_package.uncombs_set)
+        # def ash_mass_mole_eqn(b,u):
+        #     # return b.reaction_package.rate_reaction_stoichiometry[u,] ==(
+            
+        #     # b.config.property_package.config.components[j]["parameter_data"]["mw"][0]
+        #     # *b.reaction_package.stoich_init[u,p,j]
+        #     # for p,j in b.reaction_package.products
 
 
             
-            b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"].unfix() #unsure if u, and pr in key will work at same time
-            
-            
-
-
-            return getattr(b, f"ash_mass_{u}")*(162.1394/66.37) == b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"]
+        #     b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"].unfix() #unsure if u, and pr in key will work at same time
+        #     return getattr(b, f"ash_mass_{u}")*(162.1394/66.37) == b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"]
 
 
 

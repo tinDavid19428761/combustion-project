@@ -60,10 +60,11 @@ class BMCombReactionParameterData(ReactionParameterBlock):
         # Reaction Index
         self.rate_reaction_idx = Set(initialize=["R1"])
         self.uncombs_set = Set(initialize=["R1",])
-        self.products = Set(initialize=[("Vap","CO2"),
+        self.products = Set(initialize=[("Vap","CO2"), #assumed combustion products
                                         ("Vap","H2O"),
                                         ("Vap","N2"),
-                                        ("Sol","ash"),])
+                                        ("Sol","ash"),
+                                        ])
 
         self.reaction_set = Set(initialize=[("R1", "Vap", "H2O"),
                                             ("R1", "Vap", "CO2"),
@@ -80,8 +81,9 @@ class BMCombReactionParameterData(ReactionParameterBlock):
                                             ("R1", "Vap", "O2"): -6,
                                             ("R1", "Sol", "biomass"): -1,
                                             ("R1", "Vap", "N2"): 0,
-                                            ("R1", "Sol", "ash"): 0,
-                                            })
+                                            ("R1", "Sol", "ash"): 0.03,
+                                            }
+                                            ,mutable=True)
         self.rate_reaction_stoichiometry = Var(self.reaction_set, initialize=self.stoich_init)
         self.rate_reaction_stoichiometry.fix()
         
@@ -93,20 +95,6 @@ class BMCombReactionParameterData(ReactionParameterBlock):
         within=Any)
 
         
-        # self.h=Var(initialize=0.06) #concentration of hydrogen as a percentage of weight, h=6%
-        # self.w=Var(initialize=0.09) #water content of fuel as percentage of weight
-        # self.h.fix()
-        # self.w.fix()
-        # # self.gcv=Param(initialize=20.2, units=pyunits.MJ/pyunits.kg, doc="gross calorific value") #gross calorific value (dry basis)
-        # self.gcv=Param(initialize=20.2, units=pyunits.MJ/pyunits.kg, doc="gross calorific value") 
-        # # self.ncv = Var(initialize=-(self.gcv*(1-self.w)-2.447*self.w-2.447*self.h*9.01*(1-self.w))*162.1394*1000, units=pyunits.J/pyunits.mol)
-        # self.ncv = Var(initialize=-(self.gcv*(1-self.w)-2.447*self.w-2.447*self.h*9.01*(1-self.w))*162.1394*1000)
-
-        # @Constraint()
-        # def ncv_eqn(b):
-        #     b.ncv == (
-        #         -(b.gcv*(1-b.w)-2.447*b.w-2.447*b.h*9.01*(1-b.w))*162.1394*1000
-        #     )
             
             
 
