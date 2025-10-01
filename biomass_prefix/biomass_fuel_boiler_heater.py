@@ -103,6 +103,9 @@ print(degrees_of_freedom(m))
 assert degrees_of_freedom(m) == 0
 m.fs.R101.initialize(outlvl=idaeslog.INFO)
 
+solver=SolverFactory("ipopt")
+status=solver.solve(m,tee=True)
+
 m.fs.R101.report()
 print(value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Vap", "CO2"]))
 print(value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Sol","ash"]))
