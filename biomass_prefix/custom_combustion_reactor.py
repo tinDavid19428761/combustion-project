@@ -278,7 +278,7 @@ see property package for documentation.}""",
         
 
         for u in self.reaction_package.uncombs_set:
-            setattr(self,f"ash_mass_{u}",Var(initialize=0.01, units=pyunits.g/pyunits.g))
+            setattr(self,f"ash_mass_{u}",Var(initialize=0.000001, units=pyunits.g/pyunits.g))
 
         #abbreviations
         mw = self.config.property_package.config.components
