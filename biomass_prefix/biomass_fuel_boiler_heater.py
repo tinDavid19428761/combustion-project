@@ -75,12 +75,12 @@ bm_frac=0.01
 
 #appended variables by custom_combustion_reactor
 m.fs.R101.conversion_R1.fix(1)
-m.fs.R101.hcon.fix(0.07)
-m.fs.R101.wcon.fix(0.1)
+m.fs.R101.hcon.fix(0.06)
+m.fs.R101.wcon.fix(0.09)
 m.fs.R101.ohtc.fix(100)
-m.fs.R101.surface_area.fix(0.1)
+# m.fs.R101.surface_area.fix(0.1)
 m.fs.R101.surface_temp.fix(60)
-# m.fs.R101.ash_mass_R1.fix(0.2)
+m.fs.R101.ash_mass_R1.fix(0.0)
 # m.fs.R101.heat_duty.fix(-100000)
 
 
@@ -95,7 +95,7 @@ m.fs.R101.inlet.pressure.fix(101325)
 m.fs.R101.inlet.flow_mol.fix(flowTotal)
 
 
-# m.fs.R101.outlet.temperature.fix(400)
+m.fs.R101.outlet.temperature.fix(400)
 # m.fs.R101.rate_reaction_extent[0,"R1"].fix(extentR1)
 
 
@@ -107,12 +107,11 @@ solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)
 
 m.fs.R101.report()
-print(f"{value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Vap", "CO2"]):.2f}")
+print(f"{value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Sol", "biomass"]):.2f}")
 print(f"{value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Vap", "H2O"]):.2f}")
-print(f"{value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Sol", "ash"]):.2f}")
+print(f"{value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Sol", "ash"]):.8f}")
+print(f"{value(m.fs.R101.dh_rxn_R1):.2f}")
 
-print(value(m.fs.R101.mass_outs_R1))
-print(value(m.fs.R101.mol_out_R1))
 # print(f"{value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Vap", "N2"]):.2f}")
 # print(f"{value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Vap", "O2"]):.2f}")
 

@@ -276,10 +276,34 @@ see property package for documentation.}""",
             setattr(self,f"conversion_{r}", Var(initialize=1,bounds=(0,1), units="dimensionless"))
             setattr(self,f"dh_rxn_{r}", Var(initialize=1000000, units=pyunits.J/pyunits.mol))   
         
+
+        for u in self.reaction_package.uncombs_set:
+            setattr(self,f"ash_mass_{u}",Var(initialize=0.01, units=pyunits.g/pyunits.g))
+
         #abbreviations
         mw = self.config.property_package.config.components
         # rrstoich = self.reaction_package.rate_reaction_stoichiometry #actual stoichiometry variables
         
+        @self.Constraint(self.reaction_package.uncombs_set)
+        def ash_con(b,u):
+            p,l = b.reaction_package.limit_reactant_dict[u]
+            fueli = b.reaction_package.stoich_init[u,p,l]
+            mw_ash = mw["ash"]["parameter_data"]["mw"][0]
+            mw_fuel = mw[l]["parameter_data"]["mw"][0]
+            b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"].unfix()
+            return b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"]== getattr(b,f"ash_mass_{u}")*mw_fuel/mw_ash*(-fueli)
+        
+        @self.Constraint(self.reaction_package.uncombs_set)
+        def ash_con_fuel(b,u):
+            p,l = self.reaction_package.limit_reactant_dict[u]
+            ashi = b.reaction_package.stoich_init[u,"Sol","ash"] #initial ash is assumed to be part of the mass balance
+            mw_ash = mw["ash"]["parameter_data"]["mw"][0]
+            fueli = b.reaction_package.stoich_init[u,p,l]
+            mw_fuel = mw[l]["parameter_data"]["mw"][0]
+            b.reaction_package.rate_reaction_stoichiometry[u,p,l].unfix()
+            return b.reaction_package.rate_reaction_stoichiometry[u,p,l] == -((getattr(b,f"ash_mass_{u}")*mw_fuel/mw_ash*fueli)-ashi-fueli)
+
+
 
 
         @self.Constraint(self.reaction_package.rate_reaction_idx)
@@ -290,9 +314,14 @@ see property package for documentation.}""",
         #hard coded constraint just for biomassbiomass heating value [turn into callable method?]
         @self.Constraint()
         def ncv_eqn(b):
+            p,l = self.reaction_package.limit_reactant_dict[u]
+            mw_ash = mw["ash"]["parameter_data"]["mw"][0]
+            ashi = b.reaction_package.stoich_init[u,"Sol","ash"]
+            fueli = b.reaction_package.stoich_init[u,p,l]
+            mw_fuel = mw[l]["parameter_data"]["mw"][0]
             return b.dh_rxn_R1 == (
-                -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000/(1+ash)
-            )
+                -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000/(fueli+((getattr(b,f"ash_mass_{u}")*mw_fuel/mw_ash*fueli)-ashi)))
+            
         
         @self.Constraint(self.flowsheet().time,)
         def heat_loss_eqn(b,t):
@@ -305,7 +334,7 @@ see property package for documentation.}""",
                 self.flowsheet().time,
                 self.reaction_package.rate_reaction_idx)
         def conversion_performance_eqn(b, t, r):
-            l = self.reaction_package.limit_reactant_dict[r]
+            p,l = self.reaction_package.limit_reactant_dict[r]
             return getattr(b, f"conversion_{r}") == (
             b.control_volume.rate_reaction_extent[t,r]
              /(b.control_volume.properties_in[t].mole_frac_comp[l]
