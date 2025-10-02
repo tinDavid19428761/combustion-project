@@ -85,7 +85,7 @@ class BMCombReactionParameterData(ReactionParameterBlock):
                                             ("R1", "Vap", "N2"): 0,
                                             ("R1", "Sol", "ash"): 0.0,
                                             }
-                                            ,mutable=True)
+                                            ,mutable=False)
         self.rate_reaction_stoichiometry = Var(self.reaction_set, initialize=self.stoich_init)
         self.rate_reaction_stoichiometry.fix()
         

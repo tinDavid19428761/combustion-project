@@ -78,9 +78,9 @@ m.fs.R101.conversion_R1.fix(1)
 m.fs.R101.hcon.fix(0.06)
 m.fs.R101.wcon.fix(0.09)
 m.fs.R101.ohtc.fix(100)
-# m.fs.R101.surface_area.fix(0.1)
+# m.fs.R101.surface_area.fix(1)
 m.fs.R101.surface_temp.fix(60)
-m.fs.R101.ash_mass_R1.fix(0.0)
+m.fs.R101.ash_mass_R1.fix(0.00000001)
 # m.fs.R101.heat_duty.fix(-100000)
 
 
@@ -103,14 +103,20 @@ print(degrees_of_freedom(m))
 assert degrees_of_freedom(m) == 0
 m.fs.R101.initialize(outlvl=idaeslog.INFO)
 
+m.fs.R101.outlet.temperature.unfix()
+m.fs.R101.surface_area.fix(0.1)
+m.fs.R101.ash_mass_R1.fix(0.05)
+
+
 solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)
 
 m.fs.R101.report()
-print(f"{value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Sol", "biomass"]):.2f}")
-print(f"{value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Vap", "H2O"]):.2f}")
-print(f"{value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Sol", "ash"]):.8f}")
-print(f"{value(m.fs.R101.dh_rxn_R1):.2f}")
+print(value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Sol", "biomass"]))
+print(value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Sol", "ash"]))
+# print(f"{value(m.fs.R101.reaction_package.rate_reaction_stoichiometry[("R1", "Vap", "H2O")]):.2f}")
+# print(f"{value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Sol", "ash"]):.8f}")
+# print(f"{value(m.fs.R101.dh_rxn_R1):.2f}")
 
 # print(f"{value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Vap", "N2"]):.2f}")
 # print(f"{value(m.fs.R101.reaction_package.rate_reaction_stoichiometry["R1", "Vap", "O2"]):.2f}")

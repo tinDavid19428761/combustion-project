@@ -301,7 +301,7 @@ see property package for documentation.}""",
             fueli = b.reaction_package.stoich_init[u,p,l]
             mw_fuel = mw[l]["parameter_data"]["mw"][0]
             b.reaction_package.rate_reaction_stoichiometry[u,p,l].unfix()
-            return b.reaction_package.rate_reaction_stoichiometry[u,p,l] == -((getattr(b,f"ash_mass_{u}")*mw_fuel/mw_ash*fueli)-ashi-fueli)
+            return b.reaction_package.rate_reaction_stoichiometry[u,p,l] == -(getattr(b,f"ash_mass_{u}")*mw_fuel/mw_ash*(-fueli)-ashi)+fueli
 
 
 
@@ -320,7 +320,7 @@ see property package for documentation.}""",
             fueli = b.reaction_package.stoich_init[u,p,l]
             mw_fuel = mw[l]["parameter_data"]["mw"][0]
             return b.dh_rxn_R1 == (
-                -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000/(fueli+((getattr(b,f"ash_mass_{u}")*mw_fuel/mw_ash*fueli)-ashi)))
+                -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000/(-fueli+((getattr(b,f"ash_mass_{u}")*mw_fuel/mw_ash*(-fueli))-ashi)))
             
         
         @self.Constraint(self.flowsheet().time,)
