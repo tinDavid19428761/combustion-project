@@ -63,8 +63,10 @@ class BMCombReactionParameterData(ReactionParameterBlock):
         self.products = Set(initialize=[("Vap","CO2"), #assumed combustion products
                                         ("Vap","H2O"),
                                         ("Vap","N2"),
-                                        ("Sol","ash"),
+                                        # ("Sol","ash"),
                                         ])
+        
+
 
         self.reaction_set = Set(initialize=[("R1", "Vap", "H2O"),
                                             ("R1", "Vap", "CO2"),
@@ -79,9 +81,9 @@ class BMCombReactionParameterData(ReactionParameterBlock):
                                             ("R1", "Vap", "H2O"): 5,
                                             ("R1", "Vap", "CO2"): 6,
                                             ("R1", "Vap", "O2"): -6,
-                                            ("R1", "Sol", "biomass"): -1,
+                                            ("R1", "Sol", "biomass"): -1-0.1,
                                             ("R1", "Vap", "N2"): 0,
-                                            ("R1", "Sol", "ash"): 0.03,
+                                            ("R1", "Sol", "ash"): 0.1+0.1,
                                             }
                                             ,mutable=True)
         self.rate_reaction_stoichiometry = Var(self.reaction_set, initialize=self.stoich_init)
@@ -89,6 +91,7 @@ class BMCombReactionParameterData(ReactionParameterBlock):
         
         # self.reactant_list=Set(initialize=["biomass"])
 
+        #fuel dict
         self.limit_reactant_dict = Param(self.rate_reaction_idx, initialize={
             "R1": "biomass",
         },

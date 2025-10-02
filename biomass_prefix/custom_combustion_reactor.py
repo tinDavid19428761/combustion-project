@@ -267,55 +267,19 @@ see property package for documentation.}""",
         self.wcon=Var(initialize=0.09) #water content of fuel as percentage of weight
         self.gcv=Param(initialize=20.2, units=pyunits.MJ/pyunits.kg, doc="gross calorific value") 
 
+        
+
+
         #alternate build for conversion:
         # self.conversion = Var(self.reaction_package.rate_reaction_idx ,initialize=1, bounds=(0,1), units="dimensionless")
         for r in self.reaction_package.rate_reaction_idx:
             setattr(self,f"conversion_{r}", Var(initialize=1,bounds=(0,1), units="dimensionless"))
             setattr(self,f"dh_rxn_{r}", Var(initialize=1000000, units=pyunits.J/pyunits.mol))   
-
-
-        # self.ash_mass = Var(self.reaction_package.uncombs_set,initialize=0.01, units=pyunits.g/pyunits.g)
-        for u in self.reaction_package.uncombs_set:
-            setattr(self,f"ash_mass_{u}", Var(initialize=0.02 , units=pyunits.g/pyunits.g))
-
-            # mw = self.config.property_package.config.components
-            # rrstoich = self.reaction_package.rate_reaction_stoichiometry #actual stoichiometry variables
-            # inistoich = self.reaction_package.stoich_init #initialised constants
-            # new_ash = getattr(self, f"ash_mass_{u}")-inistoich[(u,"Sol","ash")] 
-            # pre_ash = sum(mw[s]["parameter_data"]["mw"][0]*inistoich[u,k,s] for k,s in self.reaction_package.products)
-            # ratio = pre_ash/(pre_ash+(new_ash)*mw["ash"]["parameter_data"]["mw"][0])
-            # inistoich[(u,"Sol","ash")] +=new_ash
-
-        # for p,j in self.reaction_package.products:
-        @self.Constraint(self.reaction_package.uncombs_set,self.reaction_package.products)
-        def ash_mass_inter(b,u,p,j):
-            fuel = self.reaction_package.limit_reactant_dict[u]
-            mw = self.config.property_package.config.components
-            rrstoich = self.reaction_package.rate_reaction_stoichiometry #actual stoichiometry variables
-            inistoich = self.reaction_package.stoich_init #initialised constants
-            new_ash = (getattr(self, f"ash_mass_{u}")*162.1394/66.37)-inistoich[(u,"Sol","ash")] #mw["ash"]["parameter_data"]["mw"][0]*self.config.property_package.config.components[fuel]["parameter_data"]["mw"][0]
-            pre_ash = sum(mw[s]["parameter_data"]["mw"][0]*inistoich[u,k,s] for k,s in self.reaction_package.products)
-            ratio = pre_ash/(pre_ash+(new_ash)*mw["ash"]["parameter_data"]["mw"][0])
-            inistoich[(u,"Sol","ash")] =new_ash+inistoich[(u,"Sol","ash")]
-            rrstoich[u,p,j].unfix()
-            return rrstoich[u,p,j] == inistoich[u,p,j]*ratio
-            
-
-
-        # @self.Constraint(self.reaction_package.uncombs_set)
-        # def ash_mass_mole_eqn(b,u):
-        #     # return b.reaction_package.rate_reaction_stoichiometry[u,] ==(
-            
-        #     # b.config.property_package.config.components[j]["parameter_data"]["mw"][0]
-        #     # *b.reaction_package.stoich_init[u,p,j]
-        #     # for p,j in b.reaction_package.products
-
-
-            
-        #     b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"].unfix() #unsure if u, and pr in key will work at same time
-        #     return getattr(b, f"ash_mass_{u}")*(162.1394/66.37) == b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"]
-
-
+        
+        #abbreviations
+        mw = self.config.property_package.config.components
+        # rrstoich = self.reaction_package.rate_reaction_stoichiometry #actual stoichiometry variables
+        
 
 
         @self.Constraint(self.reaction_package.rate_reaction_idx)
@@ -327,7 +291,7 @@ see property package for documentation.}""",
         @self.Constraint()
         def ncv_eqn(b):
             return b.dh_rxn_R1 == (
-                -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000
+                -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000/(1+ash)
             )
         
         @self.Constraint(self.flowsheet().time,)
@@ -363,8 +327,8 @@ see property package for documentation.}""",
         for r in self.reaction_package.rate_reaction_idx:
             var_dict["%s Conversion"%(r)] = getattr(self,f"conversion_{r}")
             var_dict["%s dh_rxn"%(r)] = getattr(self, f"dh_rxn_{r}")
-        for u in self.reaction_package.uncombs_set:
-            var_dict["%s Ash content"%(u)] = getattr(self,f"ash_mass_{u}")
+        # for u in self.reaction_package.uncombs_set:
+        #     var_dict["%s Ash content"%(u)] = getattr(self,f"ash_mass_{u}")
         if hasattr(self, "heat_duty"):
             var_dict["Heat Duty"] = self.heat_duty[time_point]
         if hasattr(self, "deltaP"):

@@ -41,7 +41,7 @@ _log = idaeslog.getLogger(__name__)
 #[7] Jacobsen, Stewart, et al., 1986
 # [8] 	Cardoso, 1915
 
-KeyboardInterruptconfiguration = {
+configuration = {
     "include_enthalpy_of_formation":(False), #put this at the top
     # Specifying components
     "components": {
