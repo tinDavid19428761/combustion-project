@@ -293,7 +293,7 @@ see property package for documentation.}""",
             mw_ash = mw["ash"]["parameter_data"]["mw"][0]
             mw_fuel = mw[l]["parameter_data"]["mw"][0]
             b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"].unfix()
-            return b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"]== (ash_perc*mw_fuel/mw_ash*(-fueli)/(1-ashi))*mw_ash/mw_fuel+ashi
+            return b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"]== (ash_perc*(-fueli)/(1-(ash_perc*mw_fuel/mw_ash)))+ashi
         
         @self.Constraint(self.reaction_package.uncombs_set)
         def ash_con_fuel(b,u):
@@ -304,9 +304,7 @@ see property package for documentation.}""",
             fueli = b.reaction_package.stoich_init[u,p,l]
             mw_fuel = mw[l]["parameter_data"]["mw"][0]
             b.reaction_package.rate_reaction_stoichiometry[u,p,l].unfix()
-            return b.reaction_package.rate_reaction_stoichiometry[u,p,l] == -(ash_perc*mw_fuel/mw_ash*(-fueli)/(1-ashi))+fueli
-
-
+            return b.reaction_package.rate_reaction_stoichiometry[u,p,l] == -(ash_perc*mw_fuel/mw_ash*(-fueli)/(1-(ash_perc*mw_fuel/mw_ash)))+fueli
 
 
         @self.Constraint(self.reaction_package.rate_reaction_idx)
@@ -324,7 +322,7 @@ see property package for documentation.}""",
             fueli = b.reaction_package.stoich_init[u,p,l]
             mw_fuel = mw[l]["parameter_data"]["mw"][0]
             return b.dh_rxn_R1 == (
-                -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000/(-(ash_perc*mw_fuel/mw_ash*(-fueli)/(1-ashi))+fueli))
+                -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000/((ash_perc*mw_fuel/mw_ash*(-fueli)/(1-(ash_perc*mw_fuel/mw_ash)))-fueli))
             
         
         @self.Constraint(self.flowsheet().time,)
