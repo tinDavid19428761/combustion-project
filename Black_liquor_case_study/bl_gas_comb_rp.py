@@ -82,7 +82,7 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
         # Reaction Stoichiometry
         self.rate_reaction_stoichiometry = Var(self.reaction_set, initialize={
                                             ("Rbl", "Vap", "H2O"): 1-0.7-(0.875*0.3), # carryover water subtract(H2O consumed based on Co2 emit.)
-                                            ("Rbl", "Vap", "CO2"): 0.3, #based on assumed black liquor emissions factor of 95.3 CO2/GJ         
+                                            ("Rbl", "Vap", "CO2"): 0.3, #based on assumed black liquor emissions factor of 95.3 kgCO2/GJ         
                                             ("Rbl", "Vap", "O2"): -0.3+(0.15*0.875), #0.3 based on Co2 emit. add(Oxygen supplied by H2O)
                                             ("Rbl", "Liq", "BL"): -1,   
                                             ("Rbl", "Vap", "N2"): 0,

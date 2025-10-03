@@ -80,7 +80,7 @@ m.fs.R101.wcon.fix(0.09)
 m.fs.R101.ohtc.fix(100)
 # m.fs.R101.surface_area.fix(1)
 m.fs.R101.surface_temp.fix(60)
-m.fs.R101.ash_mass_R1.fix(0.0000001)
+m.fs.R101.ash_mass_R1.fix(0.0)
 # m.fs.R101.heat_duty.fix(-100000)
 
 
