@@ -295,8 +295,7 @@ see property package for documentation.}""",
             ash_perc_mol = ash_perc*mw_fuel/mw_ash
             added_mols_BM = (ash_perc_mol-ashi)*(-fueli)/(1-(ash_perc_mol-ashi))
             b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"].unfix()
-            # return b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"]== (ash_perc*(-fueli)/(1-(ash_perc*mw_fuel/mw_ash)))+ashi
-            return b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"]== added_mols_BM*(1+ashi)+ashi*fueli
+            return b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"]== added_mols_BM*(1+ashi)+ashi*(-fueli)
         
         @self.Constraint(self.reaction_package.uncombs_set)
         def ash_con_fuel(b,u):
