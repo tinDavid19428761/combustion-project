@@ -292,8 +292,11 @@ see property package for documentation.}""",
             fueli = b.reaction_package.stoich_init[u,p,l]
             mw_ash = mw["ash"]["parameter_data"]["mw"][0]
             mw_fuel = mw[l]["parameter_data"]["mw"][0]
+            ash_perc_mol = ash_perc*mw_fuel/mw_ash
+            added_mols_BM = (ash_perc_mol-ashi)*(-fueli)/(1-(ash_perc_mol-ashi))
             b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"].unfix()
-            return b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"]== (ash_perc*(-fueli)/(1-(ash_perc*mw_fuel/mw_ash)))+ashi
+            # return b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"]== (ash_perc*(-fueli)/(1-(ash_perc*mw_fuel/mw_ash)))+ashi
+            return b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"]== added_mols_BM*(1+ashi)+ashi*fueli
         
         @self.Constraint(self.reaction_package.uncombs_set)
         def ash_con_fuel(b,u):
@@ -303,8 +306,10 @@ see property package for documentation.}""",
             mw_ash = mw["ash"]["parameter_data"]["mw"][0]
             fueli = b.reaction_package.stoich_init[u,p,l]
             mw_fuel = mw[l]["parameter_data"]["mw"][0]
+            ash_perc_mol = ash_perc*mw_fuel/mw_ash
+            added_mols_BM = (ash_perc_mol-ashi)*(-fueli)/(1-(ash_perc_mol-ashi))
             b.reaction_package.rate_reaction_stoichiometry[u,p,l].unfix()
-            return b.reaction_package.rate_reaction_stoichiometry[u,p,l] == -(ash_perc*mw_fuel/mw_ash*(-fueli)/(1-(ash_perc*mw_fuel/mw_ash)))+fueli
+            return b.reaction_package.rate_reaction_stoichiometry[u,p,l] == -(added_mols_BM)+fueli
 
 
         @self.Constraint(self.reaction_package.rate_reaction_idx)
@@ -312,7 +317,7 @@ see property package for documentation.}""",
             b.reaction_package.dh_rxn[r].unfix()
             return getattr(b,f"dh_rxn_{r}") == b.reaction_package.dh_rxn[r]
 
-        #hard coded constraint just for biomassbiomass heating value [turn into callable method?]
+        #dedicated NCV equation for BIOMASS
         @self.Constraint()
         def ncv_eqn(b):
             p,l = self.reaction_package.limit_reactant_dict[u]
@@ -321,8 +326,10 @@ see property package for documentation.}""",
             ashi = b.reaction_package.stoich_init[u,"Sol","ash"]
             fueli = b.reaction_package.stoich_init[u,p,l]
             mw_fuel = mw[l]["parameter_data"]["mw"][0]
+            ash_perc_mol = ash_perc*mw_fuel/mw_ash
+            added_mols_BM = (ash_perc_mol-ashi)*(-fueli)/(1-(ash_perc_mol-ashi))
             return b.dh_rxn_R1 == (
-                -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000/((ash_perc*mw_fuel/mw_ash*(-fueli)/(1-(ash_perc*mw_fuel/mw_ash)))-fueli))
+                -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000*(-fueli)/(added_mols_BM-fueli))
             
         
         @self.Constraint(self.flowsheet().time,)
