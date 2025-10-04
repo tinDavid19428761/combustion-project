@@ -66,6 +66,21 @@ configuration = {
             }, 
              
         },
+        "coal": { 
+            "type": Component,
+            "elemental_composition": {"coal":1}, 
+            "enth_mol_sol_comp": ConstantProperties.Constant,
+            "cp_mol_sol_comp": ConstantProperties.Constant,
+            "dens_mol_sol_comp": ConstantProperties.Constant,
+            'valid_phase_types': PT.solidPhase,
+            "parameter_data": {
+                "mw": (11.8615, pyunits.g / pyunits.mol),
+                "cp_mol_sol_comp_coeff": (15.41990262, pyunits.J/pyunits.mol/pyunits.K),
+                "dens_mol_sol_comp_coeff": (109598.6169, pyunits.mol/pyunits.m**3),  #10.1021/acsomega.2c00505
+                "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),
+                "enrt_mol_form_sol_comp_ref": (0, pyunits.J/pyunits.mol/pyunits.K),
+            }, 
+        },
 
         "ash": {
             "type": Component,

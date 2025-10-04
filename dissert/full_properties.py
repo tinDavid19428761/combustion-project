@@ -61,7 +61,7 @@ configuration = {
                 "visc_d_Sol_comp_coeff": (3.2833e-05, pyunits.Pa*pyunits.s)  
             }, 
         },
-        "coal": {  #subbituminous coal
+        "coal": { 
             "type": Component,
             "elemental_composition": {"coal":1}, 
             "enth_mol_sol_comp": ConstantProperties.Constant,
@@ -69,9 +69,9 @@ configuration = {
             "dens_mol_sol_comp": ConstantProperties.Constant,
             'valid_phase_types': PT.solidPhase,
             "parameter_data": {
-                "mw": (13.67, pyunits.g / pyunits.mol),
-                "cp_mol_sol_comp_coeff": (17.7702447, pyunits.J/pyunits.mol/pyunits.K), #1300 J/kg/K
-                "dens_mol_sol_comp_coeff": (95102.79844, pyunits.mol/pyunits.m**3), 
+                "mw": (11.8615, pyunits.g / pyunits.mol),
+                "cp_mol_sol_comp_coeff": (15.41990262, pyunits.J/pyunits.mol/pyunits.K),
+                "dens_mol_sol_comp_coeff": (109598.6169, pyunits.mol/pyunits.m**3),  #10.1021/acsomega.2c00505
                 "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),
                 "enrt_mol_form_sol_comp_ref": (0, pyunits.J/pyunits.mol/pyunits.K),
             }, 

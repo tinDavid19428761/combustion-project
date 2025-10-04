@@ -21,6 +21,8 @@ Fuel+Air --->[Reactor]<|---> Hot Flue ---> [Superheater] ---> [Boiler] ---> Stac
 __author__ = "David Dickson"
 
 #Importing required pyomo and idaes components
+
+import numpy as np
 from pyomo.environ import (
     Constraint,
     Var,
@@ -151,7 +153,7 @@ m.fs.fire_side.wcon.fix(0.1)
 m.fs.fire_side.ohtc.fix(100)
 m.fs.fire_side.surface_area.fix(0.1)
 m.fs.fire_side.surface_temp.fix(60)
-m.fs.fire_side.ash_mass_R1.fix(0.02)
+m.fs.fire_side.ash_mass_R1.fix(0.0)
 
 #modelling Q_loss_casing_convection
 # m.fs.fire_side.ohtc = Param(initialize=500, units=pyunits.J/pyunits.m**2/pyunits.K/pyunits.s, doc="boiler casing overall heat transfer coefficient")
@@ -221,49 +223,64 @@ seq.set_guesses_for(m.fs.boiler_hx.shell_inlet, tear_guesses)
 
 def function(unit):
     unit.initialize(outlvl=idaeslog.INFO)
+    # print(degrees_of_freedom(unit))
 
-print(degrees_of_freedom(m))  
+print(degrees_of_freedom(m))
+assert degrees_of_freedom(m) == 0  
 seq.run(m, function)
 
-# solver=SolverFactory("ipopt")
-# status=solver.solve(m,tee=True)
-# m.fs.fire_side.report()
+# m.fs.boiler_hx.overall_heat_transfer_coefficient[0].unfix()
+# m.fs.boiler_hx.shell_outlet.temperature.fix(400)
+m.fs.fire_side.ash_mass_R1.fix(0.01)
+m.fs.fire_side.inlet.flow_mol.unfix()
+solver=SolverFactory("ipopt")
 
+m.fs.boiler_eff = Expression(
+    expr = 100*(m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/(m.fs.fire_side.control_volume.rate_reaction_extent[0,"R1"]*-m.fs.fire_side.reaction_package.dh_rxn["R1"])
+    )
+
+m.fs.duty_to_steam = Expression(
+    expr = (m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/1000/1000/1000 #GJ/s
+)
 
 
 # steady_states = [12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]
-steady_states = list(range(10,49))
+steady_states = list(range(2,30,2))
 # steady_states = [20]
-effs = [0]*len(steady_states)
+flue_temps = [340,370,400, 430]
 
+efficiencies = np.zeros((len(flue_temps),len(steady_states)))
+steam_duties = np.zeros((len(flue_temps),len(steady_states)))
 
 """ Create MSS For-Loop Starting Here: """
-for i in steady_states:
+for p,n in enumerate(flue_temps):
+    m.fs.boiler_hx.shell_outlet.temperature.fix(n)
+    for j,i in enumerate(steady_states):
 
-    m.fs.boiler_hx.tube_inlet.flow_mol.fix(i)
-    #pre-solve [actual] re-specification
-    m.fs.fire_side.inlet.flow_mol.unfix()
-    m.fs.boiler_hx.shell_outlet.temperature.fix(500)
-    # m.fs.boiler_hx.area.fix(20)
+        m.fs.boiler_hx.tube_inlet.flow_mol.fix(i)
+        #pre-solve [actual] re-specification
+        # m.fs.boiler_hx.shell_outlet.temperature.fix(450)
+        # m.fs.boiler_hx.area.fix(20)
 
-    solver=SolverFactory("ipopt")
-    status=solver.solve(m,tee=True)
+        # solver=SolverFactory("ipopt")
+        print(degrees_of_freedom(m))
+        assert degrees_of_freedom(m) == 0  
+        status=solver.solve(m,tee=True)
 
-    print(degrees_of_freedom(m))
-    assert degrees_of_freedom(m) == 0
+        steam_duties[p][j] = value(m.fs.duty_to_steam)
+        efficiencies[p][j] = value(m.fs.boiler_eff)
+        print(f"{p}-{j}")
 
-    m.fs.boiler_eff = Expression(
-        expr = 100*(m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/(m.fs.fire_side.control_volume.rate_reaction_extent[0,"R1"]*-m.fs.fire_side.reaction_package.dh_rxn["R1"])
-    )
-    effs[i-steady_states[0]] = value(m.fs.boiler_eff)
+print(efficiencies)
+print(steam_duties)
 
-print(effs)
-print("Load  Eff")
-for i in range(len(steady_states)):
-    print(f"{steady_states[i]:.2f}  {effs[i]:.2f} %")
 
-plt.plot(steady_states,effs)
-plt.ylim(75,80)
+for i,j in enumerate(flue_temps):
+    plt.plot(steam_duties[i],efficiencies[i],label=f"{(j-273.15):.2f} C ")
+plt.ylim(80,100)
+plt.xlabel('Steam Generation Duty [GJ/s]')
+plt.ylabel('Boiler System Efficiency [%]')
+plt.legend()
 plt.show()
 
 
@@ -274,6 +291,4 @@ m.fs.boiler_hx.report()
 
 print(f"    Boiler Efficiency: {value(m.fs.boiler_eff):.2f}%")
 # print(f"    casing heat loss:{value(m.fs.fire_side.heat_duty[0]):.2f}J/s")
-
-
 

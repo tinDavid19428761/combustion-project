@@ -154,13 +154,14 @@ m.fs.fire_side.wcon.fix(0.1)
 m.fs.fire_side.ohtc.fix(100)
 m.fs.fire_side.surface_area.fix(0.1)
 m.fs.fire_side.surface_temp.fix(60)
-m.fs.fire_side.ash_mass_R1.fix(0.02)
+m.fs.fire_side.ash_mass_R1.fix(0.0)
 
 #specifying feed stream variables
 m.fs.fire_side.inlet.mole_frac_comp[0,"N2"].fix(0.5)
 m.fs.fire_side.inlet.mole_frac_comp[0,"O2"].fix(0.39)
 m.fs.fire_side.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
 m.fs.fire_side.inlet.mole_frac_comp[0,"H2O"].fix(1e-20) 
+m.fs.fire_side.inlet.mole_frac_comp[0,"coal"].fix(1e-20) 
 m.fs.fire_side.inlet.mole_frac_comp[0,"biomass"].fix(0.01) 
 m.fs.fire_side.inlet.mole_frac_comp[0,"ash"].fix(1e-20)
 # m.fs.fire_side.inlet.mole_frac_comp[0,"CH4"].fix(0.1)
@@ -203,6 +204,7 @@ tear_guesses = {
         (0, "CO2"): 0.06,
         (0, "H2O"): 0.05,
         # (0, "CH4"): 1e-20,
+        (0, "coal"): 1e-20,
         (0, "biomass"): 1e-20,
         (0, "ash"): 1e-20,
     },
@@ -227,6 +229,7 @@ seq.run(m, function)
 #pre-solve [actual] re-specification
 m.fs.fire_side.inlet.flow_mol.unfix()
 m.fs.boiler_hx.shell_outlet.temperature.fix(400)
+m.fs.fire_side.ash_mass_R1.fix(0.01)
 
 solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)

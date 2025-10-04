@@ -34,3 +34,26 @@ for j in range(4):
     f+="\n"
 
 print(f)
+import matplotlib.pyplot as plt
+
+# Example data
+x = [1, 2, 3, 4, 5]
+y1 = [1, 4, 9, 16, 25]
+y2 = [1, 2, 3, 4, 5]
+y3 = [25, 20, 15, 10, 5]
+
+# Plot multiple series
+plt.plot(x, y1, label='y = x^2')
+plt.plot(x, y2, label='y = x')
+plt.plot(x, y3, label='y = 30 - 5x')
+
+# Add title and labels
+plt.title('Multiple Series on the Same Plot')
+plt.xlabel('x-axis')
+plt.ylabel('y-axis')
+
+# Add a legend
+plt.legend()
+
+# Show the plot
+plt.show()

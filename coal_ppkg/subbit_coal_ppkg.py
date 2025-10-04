@@ -50,16 +50,15 @@ configuration = {
         # parameters: : cp_mol, enth_mol_form, entr_mol_form, dens_mol()
         "coal": { 
             "type": Component,
-            # "elemental_composition": {"C":813, "H":40,"O":99,"N":11,"S":37 }, # 10.1021/acsomega.2c00505 nominal coal composition
             "elemental_composition": {"coal":1}, 
             "enth_mol_sol_comp": ConstantProperties.Constant,
             "cp_mol_sol_comp": ConstantProperties.Constant,
             "dens_mol_sol_comp": ConstantProperties.Constant,
             'valid_phase_types': PT.solidPhase,
             "parameter_data": {
-                "mw": (13.67, pyunits.g / pyunits.mol),
-                "cp_mol_sol_comp_coeff": (17.77024, pyunits.J/pyunits.mol/pyunits.K),
-                "dens_mol_sol_comp_coeff": (102139.98, pyunits.mol/pyunits.m**3),  #10.1021/acsomega.2c00505
+                "mw": (11.8615, pyunits.g / pyunits.mol),
+                "cp_mol_sol_comp_coeff": (15.41990262, pyunits.J/pyunits.mol/pyunits.K),
+                "dens_mol_sol_comp_coeff": (109598.6169, pyunits.mol/pyunits.m**3),  #10.1021/acsomega.2c00505
                 "enth_mol_form_sol_comp_ref": (0, pyunits.kJ/pyunits.mol),
                 "enrt_mol_form_sol_comp_ref": (0, pyunits.J/pyunits.mol/pyunits.K),
             }, 

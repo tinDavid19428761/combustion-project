@@ -75,20 +75,24 @@ bm_frac=0.01
 
 #appended variables by custom_combustion_reactor
 m.fs.R101.conversion_R1.fix(1)
+m.fs.R101.conversion_Rcoal.fix(1)
 m.fs.R101.hcon.fix(0.06)
 m.fs.R101.wcon.fix(0.09)
 m.fs.R101.ohtc.fix(100)
 # m.fs.R101.surface_area.fix(1)
 m.fs.R101.surface_temp.fix(60)
-m.fs.R101.ash_mass_R1.fix(0.03)
+m.fs.R101.ash_mass_R1.fix(0.0)
+m.fs.R101.ash_mass_Rcoal.fix(0.0)
 # m.fs.R101.heat_duty.fix(-100000)
+m.fs.R101.dh_rxn_Rcoal.fix(-284675.1254)
 
 
 m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.7)
-m.fs.R101.inlet.mole_frac_comp[0,"O2"].fix(0.29)
+m.fs.R101.inlet.mole_frac_comp[0,"O2"].fix(0.28)
 m.fs.R101.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
 m.fs.R101.inlet.mole_frac_comp[0,"H2O"].fix(1e-20) 
 m.fs.R101.inlet.mole_frac_comp[0,"biomass"].fix(bm_frac) 
+m.fs.R101.inlet.mole_frac_comp[0,"coal"].fix(bm_frac) 
 m.fs.R101.inlet.mole_frac_comp[0,"ash"].fix(1e-20) 
 m.fs.R101.inlet.temperature.fix(300)
 m.fs.R101.inlet.pressure.fix(101325)
@@ -105,7 +109,8 @@ m.fs.R101.initialize(outlvl=idaeslog.INFO)
 
 m.fs.R101.outlet.temperature.unfix()
 m.fs.R101.surface_area.fix(0.1)
-# m.fs.R101.ash_mass_R1.fix(0.05)
+m.fs.R101.ash_mass_R1.fix(0.02)
+m.fs.R101.ash_mass_Rcoal.fix(0.03)
 
 
 solver=SolverFactory("ipopt")

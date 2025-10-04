@@ -94,7 +94,7 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                                             ("RCH4", "Vap", "O2"): -2,
                                             ("RCH4", "Sol", "coal"): 0,
                                             ("RCH4", "Vap", "N2"): 0,
-                                            ("RCH4", "Sol", "uncombustible"): 0,
+                                            ("RCH4", "Sol", "uncombustible"): 0,#no ash for verificaiton test purposes
                                             ("RCH4", "Vap", "CH4"): -1,
                                             })
         self.rate_reaction_stoichiometry.fix()

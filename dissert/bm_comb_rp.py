@@ -71,7 +71,7 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
 
         # Reaction Stoichiometry
         self.rate_reaction_stoichiometry = Var(self.reaction_set, initialize={
-                                            ("Rbiomass", "Vap", "H2O"): 5,
+                                            ("Rbiomass", "Vap", "H2O"): 5, #ideal non_ash for test purposes
                                             ("Rbiomass", "Vap", "CO2"): 6,
                                             ("Rbiomass", "Vap", "O2"): -6,
                                             ("Rbiomass", "Sol", "biomass"): -1,

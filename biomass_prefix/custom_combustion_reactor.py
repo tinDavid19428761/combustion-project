@@ -278,7 +278,7 @@ see property package for documentation.}""",
         
 
         for u in self.reaction_package.uncombs_set:
-            setattr(self,f"ash_mass_{u}",Var(initialize=0.000001, units=pyunits.g/pyunits.g))
+            setattr(self,f"ash_mass_{u}",Var(initialize=0, units=pyunits.g/pyunits.g))
 
         #abbreviations
         mw = self.config.property_package.config.components
@@ -319,12 +319,11 @@ see property package for documentation.}""",
         #dedicated NCV equation for BIOMASS
         @self.Constraint()
         def ncv_eqn(b):
-            p,l = self.reaction_package.limit_reactant_dict[u]
-            ash_perc = getattr(b,f"ash_mass_{u}")
+            ash_perc = getattr(b,f"ash_mass_R1")
             mw_ash = mw["ash"]["parameter_data"]["mw"][0]
-            ashi = b.reaction_package.stoich_init[u,"Sol","ash"]
-            fueli = b.reaction_package.stoich_init[u,p,l]
-            mw_fuel = mw[l]["parameter_data"]["mw"][0]
+            ashi = b.reaction_package.stoich_init["R1","Sol","ash"]
+            fueli = b.reaction_package.stoich_init["R1","Sol","biomass"]
+            mw_fuel = mw["biomass"]["parameter_data"]["mw"][0]
             ash_perc_mol = ash_perc*mw_fuel/mw_ash
             added_mols_BM = (ash_perc_mol-ashi)*(-fueli)/(1-(ash_perc_mol-ashi))
             return b.dh_rxn_R1 == (

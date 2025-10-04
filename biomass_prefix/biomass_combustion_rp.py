@@ -55,35 +55,50 @@ class BMCombReactionParameterData(ReactionParameterBlock):
                                               "N2",
                                               "biomass",
                                               "ash",
+                                              "coal",
                                               ])
 
         # Reaction Index
-        self.rate_reaction_idx = Set(initialize=["R1"])
-        self.uncombs_set = Set(initialize=["R1"])
-        # self.products = Set(initialize=[("Vap","CO2"), #assumed combustion products
-        #                                 ("Vap","H2O"),
-        #                                 ("Vap","N2"),
-        #                                 # ("Sol","ash"),
-        #                                 ])
+        self.rate_reaction_idx = Set(initialize=["R1","Rcoal"])
+        self.uncombs_set = Set(initialize=["R1","Rcoal"])
         
 
 
         self.reaction_set = Set(initialize=[("R1", "Vap", "H2O"),
                                             ("R1", "Vap", "CO2"),
                                             ("R1", "Vap", "O2"),
+                                            ("R1", "Sol", "coal"),
                                             ("R1", "Sol", "biomass"),
                                             ("R1", "Vap", "N2"),
                                             ("R1", "Sol", "ash"),
+
+                                            ("Rcoal", "Vap", "H2O"),
+                                            ("Rcoal", "Vap", "CO2"),
+                                            ("Rcoal", "Vap", "O2"),
+                                            ("Rcoal", "Sol", "coal"),
+                                            ("Rcoal", "Sol", "biomass"),
+                                            ("Rcoal", "Vap", "N2"),
+                                            ("Rcoal", "Sol", "ash"),
                                             ])
         
-        # default values for default dh_rxn and mass-balanced stoichiometry 
+        # default values for default dh_rxn and mass-balanced stoichiometry
+        # assumption: this stoichiometry is mass-balanced
         self.stoich_init = Param(self.reaction_set, initialize={
-                                            ("R1", "Vap", "H2O"): 5,
-                                            ("R1", "Vap", "CO2"): 6,
+                                            ("R1", "Vap", "H2O"): 4.95868,
+                                            ("R1", "Vap", "CO2"): 5.95041556,
                                             ("R1", "Vap", "O2"): -6,
+                                            ("R1", "Sol", "coal"): 0,
                                             ("R1", "Sol", "biomass"): -1,
                                             ("R1", "Vap", "N2"): 0,
-                                            ("R1", "Sol", "ash"): 0.1,
+                                            ("R1", "Sol", "ash"): 0.04409448,
+                                                                    
+                                            ("Rcoal", "Vap", "H2O"): 0.025,
+                                            ("Rcoal", "Vap", "CO2"): 0.620971467,
+                                            ("Rcoal", "Vap", "O2"): -0.548471467,
+                                            ("Rcoal", "Sol", "coal"): -1,
+                                            ("Rcoal", "Sol", "biomass"): 0,
+                                            ("Rcoal", "Vap", "N2"): 0.005,
+                                            ("Rcoal", "Sol", "ash"): 0.005361517,
                                             }
                                             ,mutable=False)
         self.rate_reaction_stoichiometry = Var(self.reaction_set, initialize=self.stoich_init)
@@ -94,6 +109,7 @@ class BMCombReactionParameterData(ReactionParameterBlock):
         #fuel dict
         self.limit_reactant_dict = Param(self.rate_reaction_idx, initialize={
             "R1": ("Sol","biomass"),
+            "Rcoal": ("Sol","coal"),
         },
         within=Any)
 
@@ -102,6 +118,8 @@ class BMCombReactionParameterData(ReactionParameterBlock):
             
 
         dh_rxn_dict = {"R1": -2749556.40, # @ w=9%, h=6% ==> ncv=-2749556.40
+                       "Rcoal": -284675.1254 #[J/molCoal]
+
                     #    "RCH4": -802.6
                        } 
         
