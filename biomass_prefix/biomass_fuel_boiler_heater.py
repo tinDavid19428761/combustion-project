@@ -80,7 +80,7 @@ m.fs.R101.wcon.fix(0.09)
 m.fs.R101.ohtc.fix(100)
 # m.fs.R101.surface_area.fix(1)
 m.fs.R101.surface_temp.fix(60)
-m.fs.R101.ash_mass_R1.fix(0.0)
+m.fs.R101.ash_mass_R1.fix(0.03)
 # m.fs.R101.heat_duty.fix(-100000)
 
 
@@ -105,7 +105,7 @@ m.fs.R101.initialize(outlvl=idaeslog.INFO)
 
 m.fs.R101.outlet.temperature.unfix()
 m.fs.R101.surface_area.fix(0.1)
-m.fs.R101.ash_mass_R1.fix(0.05)
+# m.fs.R101.ash_mass_R1.fix(0.05)
 
 
 solver=SolverFactory("ipopt")

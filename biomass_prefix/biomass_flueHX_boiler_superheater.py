@@ -137,25 +137,33 @@ TransformationFactory("network.expand_arcs").apply_to(m)
 #specifying reaction package variables
 # m.fs.fire_side.reaction_package.h.fix(0.06) #h and w in dh_rxn calculation
 # m.fs.fire_side.reaction_package.w.fix(0.09)
-m.fs.fire_side.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","ash"].unfix()
-m.fs.fire_side.ash_mass.fix(0.03)
+# m.fs.fire_side.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","ash"].unfix()
 
-#specifying combustion reactor variables
-m.fs.fire_side.conversion["Rbiomass"].fix(1)
-m.fs.fire_side.conversion["RCH4"].fix(0.5)
-m.fs.fire_side.heat_duty[0].fix(-1000)
+# m.fs.fire_side.ash_mass_R1.fix(0.03)
+
+# #specifying combustion reactor variables
+# m.fs.fire_side.conversion["Rbiomass"].fix(1)
+# m.fs.fire_side.conversion["RCH4"].fix(0.5)
+# m.fs.fire_side.heat_duty[0].fix(-1000)
+# m.fs.fire_side.surface_area.fix(0.1)
+# m.fs.fire_side.surface_temp.fix(55+273.15)
+
+m.fs.fire_side.conversion_R1.fix(1)
+m.fs.fire_side.hcon.fix(0.07)
+m.fs.fire_side.wcon.fix(0.1)
+m.fs.fire_side.ohtc.fix(100)
 m.fs.fire_side.surface_area.fix(0.1)
-m.fs.fire_side.surface_temp.fix(55+273.15)
+m.fs.fire_side.surface_temp.fix(60)
+m.fs.fire_side.ash_mass_R1.fix(0.02)
 
 #specifying feed stream variables
 m.fs.fire_side.inlet.mole_frac_comp[0,"N2"].fix(0.5)
 m.fs.fire_side.inlet.mole_frac_comp[0,"O2"].fix(0.39)
 m.fs.fire_side.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
 m.fs.fire_side.inlet.mole_frac_comp[0,"H2O"].fix(1e-20) 
-m.fs.fire_side.inlet.mole_frac_comp[0,"CO"].fix(1e-20) 
 m.fs.fire_side.inlet.mole_frac_comp[0,"biomass"].fix(0.01) 
 m.fs.fire_side.inlet.mole_frac_comp[0,"ash"].fix(1e-20)
-m.fs.fire_side.inlet.mole_frac_comp[0,"CH4"].fix(0.1)
+# m.fs.fire_side.inlet.mole_frac_comp[0,"CH4"].fix(0.1)
 m.fs.fire_side.inlet.temperature.fix(300)
 m.fs.fire_side.inlet.pressure.fix(101325)
 m.fs.fire_side.inlet.flow_mol.fix(40)
@@ -194,8 +202,7 @@ tear_guesses = {
         (0, "O2"): 0.22,
         (0, "CO2"): 0.06,
         (0, "H2O"): 0.05,
-        (0, "CO"): 1e-20,
-        (0, "CH4"): 1e-20,
+        # (0, "CH4"): 1e-20,
         (0, "biomass"): 1e-20,
         (0, "ash"): 1e-20,
     },
@@ -224,8 +231,8 @@ m.fs.boiler_hx.shell_outlet.temperature.fix(400)
 solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)
 
-m.fs.boiler_eff = Expression(
-    expr = (m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/(m.fs.fire_side.control_volume.rate_reaction_extent[0,"Rbiomass"]*-m.fs.fire_side.reaction_package.dh_rxn["Rbiomass"])
+m.fs.boiler_eff = Expression( #must change to for-loop that somes all rxn extents/dh_rxn's
+    expr = (m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/(m.fs.fire_side.control_volume.rate_reaction_extent[0,"R1"]*-m.fs.fire_side.reaction_package.dh_rxn["R1"])
 )
 m.fs.biomass_mass_flow = Expression(#units g/s 
     expr = (m.fs.fire_side.inlet.mole_frac_comp[0,"biomass"])*(m.fs.fire_side.inlet.flow_mol[0])*m.fs.biomass_properties.biomass.mw
@@ -240,6 +247,6 @@ m.fs.ash_sep.report()
 print(f"    Boiler Efficiency: {value(m.fs.boiler_eff)*100:.2f}%")
 print(f"    casing heat loss:{value(m.fs.fire_side.heat_duty[0]):.2f} J/s")
 print(f"    biomass demand: {value(m.fs.biomass_mass_flow):.3f} g/s")
-print(value(m.fs.fire_side.reaction_package.rate_reaction_stoichiometry["Rbiomass","Sol","ash"]))
+print(value(m.fs.fire_side.reaction_package.rate_reaction_stoichiometry["R1","Sol","ash"]))
 
 
