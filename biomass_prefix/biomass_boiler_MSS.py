@@ -155,6 +155,10 @@ m.fs.fire_side.surface_area.fix(0.1)
 m.fs.fire_side.surface_temp.fix(60)
 m.fs.fire_side.ash_mass_R1.fix(0.0)
 
+m.fs.fire_side.conversion_Rcoal.fix(1)
+m.fs.fire_side.ash_mass_Rcoal.fix(0.0)
+m.fs.fire_side.dh_rxn_Rcoal.fix(-284675.1254)
+
 #modelling Q_loss_casing_convection
 # m.fs.fire_side.ohtc = Param(initialize=500, units=pyunits.J/pyunits.m**2/pyunits.K/pyunits.s, doc="boiler casing overall heat transfer coefficient")
 # m.fs.fire_side.surface_area = Param(initialize=0.02, units=pyunits.m**2, doc="casing outer surface area")
@@ -167,10 +171,11 @@ m.fs.fire_side.ash_mass_R1.fix(0.0)
 
 #reactor feed stream
 m.fs.fire_side.inlet.mole_frac_comp[0,"N2"].fix(0.70)
-m.fs.fire_side.inlet.mole_frac_comp[0,"O2"].fix(0.29)
+m.fs.fire_side.inlet.mole_frac_comp[0,"O2"].fix(0.2)
 m.fs.fire_side.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
 m.fs.fire_side.inlet.mole_frac_comp[0,"H2O"].fix(1e-20) 
-m.fs.fire_side.inlet.mole_frac_comp[0,"biomass"].fix(0.01) 
+m.fs.fire_side.inlet.mole_frac_comp[0,"biomass"].fix(1e-20) 
+m.fs.fire_side.inlet.mole_frac_comp[0,"coal"].fix(0.1) 
 m.fs.fire_side.inlet.mole_frac_comp[0,"ash"].fix(1e-20)
 m.fs.fire_side.inlet.temperature.fix(300)
 m.fs.fire_side.inlet.pressure.fix(101325)
@@ -212,6 +217,7 @@ tear_guesses = {
         (0, "CO2"): 0.06,
         (0, "H2O"): 0.05,
         (0, "biomass"): 1e-20,
+        (0, "coal"): 1e-20,
         (0, "ash"): 1e-20,
     },
     "flow_mol": {0: 40},
@@ -231,17 +237,28 @@ seq.run(m, function)
 
 # m.fs.boiler_hx.overall_heat_transfer_coefficient[0].unfix()
 # m.fs.boiler_hx.shell_outlet.temperature.fix(400)
+m.fs.boiler_hx.shell_outlet.temperature.fix(400)
 m.fs.fire_side.ash_mass_R1.fix(0.01)
 m.fs.fire_side.inlet.flow_mol.unfix()
-solver=SolverFactory("ipopt")
+m.fs.fire_side.ash_mass_Rcoal.fix(0.03)
 
-m.fs.boiler_eff = Expression(
-    expr = 100*(m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/(m.fs.fire_side.control_volume.rate_reaction_extent[0,"R1"]*-m.fs.fire_side.reaction_package.dh_rxn["R1"])
-    )
+print(degrees_of_freedom(m))     
+assert degrees_of_freedom(m) == 0  
+solver=SolverFactory("ipopt")
+status=solver.solve(m,tee=True)
+
+m.fs.boiler_eff = Expression( #must change to for-loop that somes all rxn extents/dh_rxn's
+    expr = 100*(m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/
+    (sum(m.fs.fire_side.control_volume.rate_reaction_extent[0,r]*-m.fs.fire_side.reaction_package.dh_rxn[r] for r in m.fs.fire_side.reaction_package.rate_reaction_idx))
+)
 
 m.fs.duty_to_steam = Expression(
-    expr = (m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/1000/1000/1000 #GJ/s
+    expr = (m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/1000/1000/1000*60*60 #GJ/h
 )
+
+m.fs.fire_side.report()
+print(value(m.fs.boiler_eff))
+print(value(m.fs.duty_to_steam))
 
 
 # steady_states = [12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32]
@@ -277,10 +294,11 @@ print(steam_duties)
 
 for i,j in enumerate(flue_temps):
     plt.plot(steam_duties[i],efficiencies[i],label=f"{(j-273.15):.2f} C ")
-plt.ylim(80,100)
-plt.xlabel('Steam Generation Duty [GJ/s]')
+plt.ylim(70,100)
+plt.xlabel('Steam Generation Duty [GJ/hr]')
 plt.ylabel('Boiler System Efficiency [%]')
 plt.legend()
+plt.title(f"Coal Fuel")
 plt.show()
 
 

@@ -73,18 +73,20 @@ m.fs.R101 = MultiCombReactor(
 flowTotal = 100
 bm_frac=0.01
 
+m.fs.R101.conversion_Rcoal.fix(1)
+m.fs.R101.ash_mass_Rcoal.fix(0.0)
+m.fs.R101.dh_rxn_Rcoal.fix(-284675.1254)
+
+
 #appended variables by custom_combustion_reactor
 m.fs.R101.conversion_R1.fix(1)
-m.fs.R101.conversion_Rcoal.fix(1)
 m.fs.R101.hcon.fix(0.06)
 m.fs.R101.wcon.fix(0.09)
 m.fs.R101.ohtc.fix(100)
 # m.fs.R101.surface_area.fix(1)
 m.fs.R101.surface_temp.fix(60)
 m.fs.R101.ash_mass_R1.fix(0.0)
-m.fs.R101.ash_mass_Rcoal.fix(0.0)
 # m.fs.R101.heat_duty.fix(-100000)
-m.fs.R101.dh_rxn_Rcoal.fix(-284675.1254)
 
 
 m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.7)

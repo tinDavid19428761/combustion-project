@@ -156,13 +156,19 @@ m.fs.fire_side.surface_area.fix(0.1)
 m.fs.fire_side.surface_temp.fix(60)
 m.fs.fire_side.ash_mass_R1.fix(0.0)
 
+m.fs.fire_side.conversion_Rcoal.fix(1)
+m.fs.fire_side.ash_mass_Rcoal.fix(0.0)
+m.fs.fire_side.dh_rxn_Rcoal.fix(-284675.1254)
+
+
 #specifying feed stream variables
 m.fs.fire_side.inlet.mole_frac_comp[0,"N2"].fix(0.5)
 m.fs.fire_side.inlet.mole_frac_comp[0,"O2"].fix(0.39)
 m.fs.fire_side.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
 m.fs.fire_side.inlet.mole_frac_comp[0,"H2O"].fix(1e-20) 
 m.fs.fire_side.inlet.mole_frac_comp[0,"coal"].fix(1e-20) 
-m.fs.fire_side.inlet.mole_frac_comp[0,"biomass"].fix(0.01) 
+m.fs.fire_side.inlet.mole_frac_comp[0,"biomass"].fix(1e-20) 
+m.fs.fire_side.inlet.mole_frac_comp[0,"coal"].fix(0.1) 
 m.fs.fire_side.inlet.mole_frac_comp[0,"ash"].fix(1e-20)
 # m.fs.fire_side.inlet.mole_frac_comp[0,"CH4"].fix(0.1)
 m.fs.fire_side.inlet.temperature.fix(300)
@@ -231,11 +237,14 @@ m.fs.fire_side.inlet.flow_mol.unfix()
 m.fs.boiler_hx.shell_outlet.temperature.fix(400)
 m.fs.fire_side.ash_mass_R1.fix(0.01)
 
+m.fs.fire_side.ash_mass_Rcoal.fix(0.03)
+
 solver=SolverFactory("ipopt")
 status=solver.solve(m,tee=True)
 
 m.fs.boiler_eff = Expression( #must change to for-loop that somes all rxn extents/dh_rxn's
-    expr = (m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/(m.fs.fire_side.control_volume.rate_reaction_extent[0,"R1"]*-m.fs.fire_side.reaction_package.dh_rxn["R1"])
+    expr = (m.fs.superheater.heat_duty[0]+m.fs.boiler_hx.heat_duty[0])/
+    (sum(m.fs.fire_side.control_volume.rate_reaction_extent[0,r]*-m.fs.fire_side.reaction_package.dh_rxn[r] for r in m.fs.fire_side.reaction_package.rate_reaction_idx))
 )
 m.fs.biomass_mass_flow = Expression(#units g/s 
     expr = (m.fs.fire_side.inlet.mole_frac_comp[0,"biomass"])*(m.fs.fire_side.inlet.flow_mol[0])*m.fs.biomass_properties.biomass.mw
