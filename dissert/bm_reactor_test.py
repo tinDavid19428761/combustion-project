@@ -25,12 +25,12 @@ m.fs.react = StoichiometricReactor(
 )
 
 
-# m.fs.mixer = Mixer(
-#     property_package = m.fs.properties,
-# )
+m.fs.mixer = Mixer(
+    property_package = m.fs.properties,
+)
 
-# m.fs.stream1 = Arc(source=m.fs.mixer.outlet, destination=m.fs.react.inlet)
-# TransformationFactory("network.expand_arcs").apply_to(m)
+m.fs.stream1 = Arc(source=m.fs.mixer.outlet, destination=m.fs.react.inlet)
+TransformationFactory("network.expand_arcs").apply_to(m)
 
 #to embed into comprehensive combustion reactor unit model
 # total_flow=1
