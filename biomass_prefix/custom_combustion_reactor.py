@@ -282,7 +282,6 @@ see property package for documentation.}""",
 
         #abbreviations
         mw = self.config.property_package.config.components
-        # rrstoich = self.reaction_package.rate_reaction_stoichiometry #actual stoichiometry variables
         
         @self.Constraint(self.reaction_package.uncombs_set)
         def ash_con(b,u):
@@ -327,9 +326,15 @@ see property package for documentation.}""",
             ash_perc_mol = ash_perc*mw_fuel/mw_ash
             added_mols_BM = (ash_perc_mol-ashi)*(-fueli)/(1-(ash_perc_mol-ashi))
             return b.dh_rxn_R1 == (
-                -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000*(-fueli)/(added_mols_BM-fueli))
-            
+                # -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000*(-fueli)/(added_mols_BM-fueli))
+                -(b.gcv*(1-b.wcon)-2.447*b.wcon-2.447*b.hcon*9.01*(1-b.wcon))*162.1394*1000*(-fueli)/(-b.reaction_package.rate_reaction_stoichiometry["R1","Sol","biomass"]))
         
+        @self.Constraint()
+        def coal_ash_dh_rxn_adjustment(b):
+            fueli = b.reaction_package.stoich_init["Rcoal","Sol","coal"]
+            return b.dh_rxn_Rcoal == -284675.1254**(-fueli)/(-b.reaction_package.rate_reaction_stoichiometry["Rcoal","Sol","coal"])
+        
+
         @self.Constraint(self.flowsheet().time,)
         def heat_loss_eqn(b,t):
             return b.heat_duty[t] == (

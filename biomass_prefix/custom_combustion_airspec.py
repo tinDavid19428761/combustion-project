@@ -200,7 +200,7 @@ class MultiCombReactorData(UnitModelBlockData):
             p,l = b.reaction_package.limit_reactant_dict[r]
             O2_stoich = b.reaction_package.rate_reaction_stoichiometry[r,"Vap",O2_compound]
             fuel_stoich = b.reaction_package.rate_reaction_stoichiometry[r,p,l]
-            return (1+getattr(b, f"excess_air_percent_{r}")/100)*O2_stoich/0.21/fuel_stoich*getattr(b, f"mole_flow_{l}") == getattr(b, f"mole_flow_air_{r}")
+            return (1+getattr(b, f"excess_air_percent_{r}")/100)*(-O2_stoich)/0.21/(-fuel_stoich)*getattr(b, f"mole_flow_{l}") == getattr(b, f"mole_flow_air_{r}")
         
         @self.Constraint(self.flowsheet().time)
         def N2_flow_link(b,t):
