@@ -30,7 +30,6 @@ from idaes.core import FlowsheetBlock
 import idaes.logger as idaeslog
 from idaes.models.properties.modular_properties import GenericParameterBlock
 from  biomass_comb_pp import configuration 
-from  biomass_combustion_rp import BMCombReactionParameterBlock
 
 #helmholtz import for water
 from idaes.models.properties.general_helmholtz import (
@@ -40,7 +39,7 @@ from idaes.models.properties.general_helmholtz import (
         PhaseType,
     )
 
-from custom_combustion_reactor import MultiCombReactor
+from custom_combustion_airspec import MultiCombReactor
 
 m = ConcreteModel()
 
@@ -70,8 +69,13 @@ m.fs.R101 = MultiCombReactor(
 
 
 
-flowTotal = 100
-bm_frac=0.01
+
+#air_spec fix var constraints:
+m.fs.R101.excess_air_percent_Rcoal.fix(50)
+m.fs.R101.air_fuel_mass_ratio_R1.fix(10)
+m.fs.R101.mass_flow_kg_coal.fix(1.5)
+m.fs.R101.mass_flow_kg_biomass.fix(1)
+
 
 m.fs.R101.conversion_Rcoal.fix(1)
 m.fs.R101.ash_mass_Rcoal.fix(0.0)
@@ -89,16 +93,15 @@ m.fs.R101.ash_mass_R1.fix(0.0)
 # m.fs.R101.heat_duty.fix(-100000)
 
 
-m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.7)
-m.fs.R101.inlet.mole_frac_comp[0,"O2"].fix(0.28)
+# m.fs.R101.inlet.mole_frac_comp[0,"N2"].fix(0.7)
+# m.fs.R101.inlet.mole_frac_comp[0,"O2"].fix(0.3-0.1-bm_frac)
 m.fs.R101.inlet.mole_frac_comp[0,"CO2"].fix(1e-20)
 m.fs.R101.inlet.mole_frac_comp[0,"H2O"].fix(1e-20) 
-m.fs.R101.inlet.mole_frac_comp[0,"biomass"].fix(bm_frac) 
-m.fs.R101.inlet.mole_frac_comp[0,"coal"].fix(bm_frac) 
+# m.fs.R101.inlet.mole_frac_comp[0,"biomass"].fix(bm_frac) 
+# m.fs.R101.inlet.mole_frac_comp[0,"coal"].fix(0.1) 
 m.fs.R101.inlet.mole_frac_comp[0,"ash"].fix(1e-20) 
 m.fs.R101.inlet.temperature.fix(300)
 m.fs.R101.inlet.pressure.fix(101325)
-m.fs.R101.inlet.flow_mol.fix(flowTotal)
 
 
 m.fs.R101.outlet.temperature.fix(400)
@@ -107,11 +110,12 @@ m.fs.R101.outlet.temperature.fix(400)
 
 print(degrees_of_freedom(m))
 assert degrees_of_freedom(m) == 0
-m.fs.R101.initialize(outlvl=idaeslog.INFO)
 
-m.fs.R101.outlet.temperature.unfix()
-m.fs.R101.surface_area.fix(0.1)
-m.fs.R101.ash_mass_R1.fix(0.02)
+# m.fs.R101.initialize(outlvl=idaeslog.INFO)
+
+# m.fs.R101.outlet.temperature.unfix()
+# m.fs.R101.surface_area.fix(0.1)
+m.fs.R101.ash_mass_R1.fix(0.03)
 m.fs.R101.ash_mass_Rcoal.fix(0.03)
 
 
