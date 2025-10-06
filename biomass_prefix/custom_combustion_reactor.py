@@ -1,19 +1,8 @@
 #custom_stoichiometric_reactor
-#################################################################################
-# The Institute for the Design of Advanced Energy Systems Integrated Platform
-# Framework (IDAES IP) was produced under the DOE Institute for the
-# Design of Advanced Energy Systems (IDAES).
-#
-# Copyright (c) 2018-2024 by the software owners: The Regents of the
-# University of California, through Lawrence Berkeley National Laboratory,
-# National Technology & Engineering Solutions of Sandia, LLC, Carnegie Mellon
-# University, West Virginia University Research Corporation, et al.
-# All rights reserved.  Please see the files COPYRIGHT.md and LICENSE.md
-# for full copyright and license information.
-#################################################################################
-"""
-Standard IDAES STOICHIOMETRIC reactor model
-"""
+'''
+Adapted from standard IDAES StoichiometricReactor retrieved from:
+https://github.com/IDAES/idaes-pse/blob/main/idaes/models/unit_models/stoichiometric_reactor.py
+'''
 
 # Import Pyomo libraries
 from pyomo.environ import Reference, Var, Param, units as pyunits, value

@@ -227,7 +227,7 @@ class MultiCombReactorData(UnitModelBlockData):
             mw_fuel = mw[l]["parameter_data"]["mw"][0]
             ash_perc_mol = ash_perc*mw_fuel/mw_ash
             added_mols_BM = (ash_perc_mol-ashi)*(-fueli)/(1-(ash_perc_mol-ashi))
-            b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"].unfix()
+            b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"].unfix() 
             return b.reaction_package.rate_reaction_stoichiometry[u,"Sol","ash"]== added_mols_BM*(1+ashi)+ashi*(-fueli)
         
         @self.Constraint(self.reaction_package.uncombs_set)
@@ -275,7 +275,7 @@ class MultiCombReactorData(UnitModelBlockData):
              /(b.control_volume.properties_in[t].mole_frac_comp[l]
              *b.control_volume.properties_in[t].flow_mol
             ))
-        
+
     #variables displayed in terminal unit model report
     def _get_performance_contents(self, time_point=0):
         var_dict = {
