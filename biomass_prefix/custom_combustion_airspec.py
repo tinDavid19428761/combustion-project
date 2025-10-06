@@ -168,11 +168,11 @@ class MultiCombReactorData(UnitModelBlockData):
             p,l = self.reaction_package.limit_reactant_dict[r]
             setattr(self,f"conversion_{r}", Var(initialize=1,bounds=(0,1), units="dimensionless"))
             setattr(self,f"dh_rxn_{r}", Var(initialize=1000000, units=pyunits.J/pyunits.mol))   
-            setattr(self,f"excess_air_percent_{r}", Var(initialize = 15, units="dimensionless", doc="E.g. 15 percent excess is 1.15*stoichiometric air"))
+            setattr(self,f"excess_air_percent_{r}", Var(initialize = 15, units="dimensionless"))
             setattr(self,f"air_fuel_mass_ratio_{r}", Var(initialize=6, units="dimensionless"))
             setattr(self,f"mass_flow_kg_{l}", Var(initialize=1 ,doc="mass flow of fuel in kg/s"))
             setattr(self,f"mole_flow_{l}", Var(initialize=100, doc="fuel molar flow in mol/s"))
-            setattr(self,f"mole_flow_air_{r}", Var(initialize=1000, doc="mole flow air per combustion reaction in mol/s"))
+            setattr(self,f"mole_flow_air_{r}", Var(initialize=1000, doc="mole flow air in mol/s"))
 
         # ash mass content variable only for reactions with ash in uncombs_set list        
         for u in self.reaction_package.uncombs_set:
