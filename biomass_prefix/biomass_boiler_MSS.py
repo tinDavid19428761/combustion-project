@@ -268,6 +268,7 @@ flue_temps = [340,370,400, 430]
 
 efficiencies = np.zeros((len(flue_temps),len(steady_states)))
 steam_duties = np.zeros((len(flue_temps),len(steady_states)))
+steam_flows = np.zeros((len(flue_temps),len(steady_states)))
 
 """ Create MSS For-Loop Starting Here: """
 for p,n in enumerate(flue_temps):
@@ -286,6 +287,7 @@ for p,n in enumerate(flue_temps):
 
         steam_duties[p][j] = value(m.fs.duty_to_steam)
         efficiencies[p][j] = value(m.fs.boiler_eff)
+        steam_flows[p][j] = value(m.fs.boiler_hx.tube_inlet.flow_mol[0])*18.0153e-3 #kg/s
         print(f"{p}-{j}")
 
 print(efficiencies)
@@ -309,4 +311,9 @@ m.fs.boiler_hx.report()
 
 print(f"    Boiler Efficiency: {value(m.fs.boiler_eff):.2f}%")
 # print(f"    casing heat loss:{value(m.fs.fire_side.heat_duty[0]):.2f}J/s")
+
+for i in steam_flows[p]:
+    print(i)
+for i in efficiencies[p]:
+    print(i)
 
