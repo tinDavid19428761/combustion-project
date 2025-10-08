@@ -73,6 +73,7 @@ from bl_combustion_reactor import MultiCombReactor #has rxn pkg included
 
 # from custom_combustion_reactor import MultiCombReactor
 import unittest
+from pyomo.environ import Reference, Var, Param, units as pyunits, value
 
 m = ConcreteModel()
 
@@ -148,12 +149,12 @@ m.fs.mix.fuel.flow_mol.fix(fuel_total)
 
 
 m.fs.R101.conversion_Rbl.fix(1)
-m.fs.R101.conversion_RCH4.fix(0.0)
+m.fs.R101.conversion_RCH4.fix(0)
 
 m.fs.R101.dh_rxn_RCH4.fix(-802125)
 m.fs.R101.dh_rxn_Rbl.fix(-135150)
 
-m.fs.R101.outlet.temperature.fix(250+273.15)
+m.fs.R101.outlet.temperature.fix(195.66+273.15)
 
 
 
@@ -162,35 +163,35 @@ m.fs.mix.initialize(outlvl=idaeslog.INFO)
 m.fs.R101.initialize(outlvl=idaeslog.INFO)
 
 m.fs.H101.inlet.flow_mol.fix(2177.69)
-m.fs.H101.inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=45*10*1000*pyunits.Pa,T=(26+273.15)*pyunits.K))
-m.fs.H101.inlet.pressure.fix(45*10*1000)
+m.fs.H101.inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=45*100*1000*pyunits.Pa,T=(136.39+273.15)*pyunits.K))
+m.fs.H101.inlet.pressure.fix(45*100*1000)
 
 # m.fs.H101.outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=45*10*1000*pyunits.Pa,T=(300+273.15)*pyunits.K))
-m.fs.H101.outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=45*10*1000*pyunits.Pa,T=(300+273.15)*pyunits.K))
+m.fs.H101.outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=45*100*1000*pyunits.Pa,T=(400+273.15)*pyunits.K))
 
 
-
-
-# m.fs.mix.air.flow_mol.fix(f["air_flow"]) #return to full flow values for solve
-# m.fs.mix.fuel.flow_mol.fix(fuel_total)
-print(degrees_of_freedom(m.fs.H101))
-m.fs.H101.initialize(outlvl=idaeslog.INFO)
-
-# m.fs.H101.inlet.flow_mol.fix(217.36)
-# m.fs.H101.inlet.flow_mol.unfix()
-# m.fs.H101.heat_duty.fix(-value(m.fs.R101.heat_duty[0]))
-
-m.fs.R101.outlet.temperature.unfix()
-m.fs.R101.conversion_RCH4.fix(1)
+m.fs.R101.heat_loss = Var(initialize=100000, units=pyunits.J/pyunits.s)
 
 
 def heat_transfer_rule(b,t):
-    return b.H101.heat_duty[0] == -b.R101.heat_duty[0]
+    return b.H101.heat_duty[0]+b.R101.heat_loss == -b.R101.heat_duty[0]
 
 m.fs.heat_transfer = Constraint(
     m.fs.time,
     rule=heat_transfer_rule
 )
+
+
+print(degrees_of_freedom(m.fs.H101))
+m.fs.H101.initialize(outlvl=idaeslog.INFO)
+
+
+# m.fs.R101.outlet.temperature.unfix()
+# m.fs.R101.heat_loss.fix(-32422241) #34236241
+
+
+
+
 m.fs.boiler_efficiency = Expression(
         expr = 100*value(m.fs.H101.heat_duty[0])/sum(m.fs.R101.control_volume.rate_reaction_extent[0,r]*(-m.fs.R101.reaction_package.dh_rxn[r]) for r in m.fs.R101.reaction_package.rate_reaction_idx)
     )
@@ -201,18 +202,28 @@ status=solver.solve(m,tee=True)
 case_fluetemp = value(m.fs.R101.outlet.temperature[0])
 case_eff = value(m.fs.boiler_efficiency)
 
+m.fs.R101.report()
+print(case_eff)
+print(case_fluetemp)
+print(value(m.fs.R101.heat_loss))
+
+
+m.fs.R101.heat_loss.fix(30604244.11776122) #solved for case study condition
+
+
+
+
 #constraints for different flue stack temperatures to analyse impact of better heat transfer 
-m.fs.R101.outlet.temperature[0].fix(300+273.15)
 m.fs.H101.inlet.flow_mol.unfix()
 
 print(degrees_of_freedom(m))
 assert degrees_of_freedom(m) == 0
-temps = range(600+273,300+273,-10)
+temps = range(600-273,150,-10)
 effs = [0]*len(temps)
 
 
 for i,flue_temp in enumerate(temps):
-    m.fs.R101.outlet.temperature[0].fix(flue_temp)
+    m.fs.R101.outlet.temperature[0].fix(flue_temp+273.15)
     
     solver=SolverFactory("ipopt")
     status=solver.solve(m,tee=True)
@@ -235,9 +246,10 @@ print(case_fluetemp)
 
 plt.plot(temps,effs)
 plt.ylim(0,100)
-plt.xlabel("Flue Stack Temperature [K]")
+plt.xlabel("Flue Stack Temperature [C]")
 plt.ylabel("Boiler Efficiency [%]")
 plt.title("Boiler Efficiency Curve Against Stack Temperature")
-plt.plot([case_fluetemp],[case_eff],'ro',label='Case Study Conditions')
+plt.plot([case_fluetemp-273.15],[case_eff],'ro',label='Case Study Conditions')
 plt.legend(loc='center left')
 plt.show()
+
