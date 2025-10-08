@@ -14,7 +14,6 @@ from idaes.core import (
     UnitModelBlockData,
     useDefault,
 )
-from idaes.models_extra.power_generation.unit_models.boiler_heat_exchanger import BoilerHeatExchanger
 from idaes.core.util.config import (
     is_physical_parameter_block,
     is_reaction_parameter_block,
