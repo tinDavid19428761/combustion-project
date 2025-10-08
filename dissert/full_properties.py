@@ -1,5 +1,14 @@
 """
-Property package for the combustion of biomass in air
+Property package of all compounds used in this study
+-biomass
+-subbituminous coal
+-black liquor
+-ash
+-O2
+-CH4
+-CO2
+-H2O
+-N2
 """
 # Import Pyomo units
 from pyomo.environ import units as pyunits
@@ -25,21 +34,6 @@ from idaes.core import PhaseType as PT
 # Set up logger
 _log = idaeslog.getLogger(__name__)
 
-
-# ---------------------------------------------------------------------
-# Configuration dictionary for an ideal Benzene-Toluene system
-
-# Data Sources:
-# [1] The Properties of Gases and Liquids (1987)
-#     4th edition, Chemical Engineering Series - Robert C. Reid
-# [2] Perry's Chemical Engineers' Handbook 7th Ed.
-# [3] Engineering Toolbox, https://www.engineeringtoolbox.com
-#     Retrieved 1st December, 2019
-#[4]NIST
-#[5] wagner, Ewers, et al.,1976
-#[6] Suehiro, Nakajima, et al., 1996
-#[7] Jacobsen, Stewart, et al., 1986
-# [8] 	Cardoso, 1915
 
 configuration = {
     # Specifying components
@@ -90,9 +84,9 @@ configuration = {
                 "enth_mol_form_liq_comp_ref": (0, pyunits.kJ/pyunits.mol),  
             },
         },
-        "uncombustible": { #wood ash
+        "ash": { #wood ash
             "type": Component,
-            "elemental_composition": {"uncombustible":1}, 
+            "elemental_composition": {"ash":1}, 
             "cp_mol_sol_comp": ConstantProperties.Constant,
             "enth_mol_sol_comp": ConstantProperties.Constant,
             "dens_mol_sol_comp": ConstantProperties.Constant,
@@ -172,7 +166,6 @@ configuration = {
            "elemental_composition":{"H":2,"O":1},
            "enth_mol_ig_comp": NIST,
            "cp_mol_ig_comp": NIST,
-           "pressure_sat_comp": NIST,
            'valid_phase_types': PT.vaporPhase,
            "parameter_data": {
                "mw": (18.0153e-3, pyunits.kg / pyunits.mol), 
@@ -185,11 +178,6 @@ configuration = {
                    "F": (-250.8810, pyunits.kJ / pyunits.mol),
                    "G": (223.3967, pyunits.J / pyunits.mol / pyunits.K),
                    "H": (-241.8264, pyunits.kJ / pyunits.mol),
-               },
-               "pressure_sat_comp_coeff": {
-                   "A": (4.6543, None), #temperature range 255.9 K - 373 K
-                   "B": (1435.264, pyunits.K),
-                   "C": (-64.848, pyunits.K),
                },
            },
        },

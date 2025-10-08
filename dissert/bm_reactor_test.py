@@ -25,16 +25,6 @@ m.fs.react = StoichiometricReactor(
 )
 
 
-# m.fs.mixer = Mixer(
-#     property_package = m.fs.properties,
-# )
-
-# m.fs.stream1 = Arc(source=m.fs.mixer.outlet, destination=m.fs.react.inlet)
-# TransformationFactory("network.expand_arcs").apply_to(m)
-
-#to embed into comprehensive combustion reactor unit model
-# total_flow=1
-# biomass_frac=0.1
 M_bm = 100 # [g/s]
 FAratio = 6.5
 mw_air = 28.96 #[g/mol]
@@ -45,7 +35,6 @@ ash_wt=0.02
 w_bm = 0.09
 mw_bm=configuration["components"]["biomass"]["parameter_data"]["mw"][0]
 mw_ash=configuration["components"]["uncombustible"]["parameter_data"]["mw"][0]
-# print(value(m.fs.properties.config.components["CO2"]["parameter_data"]["mw"][0])) #method for ppkg proper
 
 N_bm = (M_bm/mw_bm)
 N_ash = ash_wt*(1-w_bm)*M_bm/mw_ash
@@ -71,7 +60,6 @@ m.fs.react.inlet.mole_frac_comp[0,"uncombustible"].fix(1e-20)
 m.fs.react.inlet.flow_mol.fix(N_total)
 m.fs.react.inlet.temperature.fix(400)
 m.fs.react.inlet.pressure.fix(101325)
-
 
 m.fs.react.rate_reaction_extent[0,"RCH4"].fix(0)
 m.fs.react.rate_reaction_extent[0,"Rbiomass"].fix(N_bm)

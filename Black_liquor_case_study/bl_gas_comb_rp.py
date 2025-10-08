@@ -1,5 +1,5 @@
 """
-reaction package for the combustion of biomass in air
+reaction package for the combustion of black liquor and methane
 """
 from pyomo.environ import Expression
 
@@ -86,7 +86,6 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                                             ("Rbl", "Vap", "O2"): -0.3+(0.15*0.875), #0.3 based on Co2 emit. add(Oxygen consumed/supplied for H2O)
                                             ("Rbl", "Liq", "BL"): -1,   
                                             ("Rbl", "Vap", "N2"): 0,
-                                            # ("Rbl", "Sol", "uncombustible"): 0.7-0.3, #assume solids are retained
                                             ("Rbl", "Sol", "uncombustible"): 0.143745, #goal seek mass balance with other stoichs
                                             ("Rbl", "Vap", "CH4"): 0,
 
@@ -107,8 +106,8 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
         },
         within=Any)
 
-        dh_rxn_dict = {"Rbl": -135150, #
-                       "RCH4": -802125 # (J/mol) engineering toolbox methane LHV
+        dh_rxn_dict = {"Rbl": -135150, 
+                       "RCH4": -802125 
                        } 
         
         self.dh_rxn = Var(self.rate_reaction_idx, 
@@ -118,8 +117,6 @@ class MultiCombReactionParameterData(ReactionParameterBlock):
                           units=pyunits.J/pyunits.mol)
         self.dh_rxn.fix()
 
-        
-        
 
     @classmethod
     def define_metadata(cls, obj):

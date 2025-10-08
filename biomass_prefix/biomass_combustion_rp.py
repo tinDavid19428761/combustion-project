@@ -1,5 +1,5 @@
 """
-reaction package for the combustion of biomass in air
+reaction package for the combustion of biomass, coal, and methane
 """
 from pyomo.environ import Expression
 
@@ -59,10 +59,8 @@ class BMCombReactionParameterData(ReactionParameterBlock):
                                               ])
 
         # Reaction Index
-        self.rate_reaction_idx = Set(initialize=["R1","Rcoal"])
+        self.rate_reaction_idx = Set(initialize=["R1","Rcoal","RCH4"])
         self.uncombs_set = Set(initialize=["R1","Rcoal"])
-        
-
 
         self.reaction_set = Set(initialize=[("R1", "Vap", "H2O"),
                                             ("R1", "Vap", "CO2"),
@@ -79,10 +77,13 @@ class BMCombReactionParameterData(ReactionParameterBlock):
                                             ("Rcoal", "Sol", "biomass"),
                                             ("Rcoal", "Vap", "N2"),
                                             ("Rcoal", "Sol", "ash"),
+
+                                            ("RCH4", "Vap", "H2O"),
+                                            ("RCH4", "Vap", "CO2"),
+                                            ("RCH4", "Vap", "O2"),
+                                            ("RCH4", "Vap", "CH4"),
                                             ])
-        
-        # default values for default dh_rxn and mass-balanced stoichiometry
-        # assumption: this stoichiometry is mass-balanced
+
         self.stoich_init = Param(self.reaction_set, initialize={
                                             ("R1", "Vap", "H2O"): 4.95868,
                                             ("R1", "Vap", "CO2"): 5.95041556,
@@ -99,28 +100,27 @@ class BMCombReactionParameterData(ReactionParameterBlock):
                                             ("Rcoal", "Sol", "biomass"): 0,
                                             ("Rcoal", "Vap", "N2"): 0.005,
                                             ("Rcoal", "Sol", "ash"): 0.005361517,
+
+                                            ("RCH4", "Vap", "H2O"):2,
+                                            ("RCH4", "Vap", "CO2"):1,
+                                            ("RCH4", "Vap", "O2"):-2,
+                                            ("RCH4", "Vap", "CH4"):-1,
                                             }
                                             ,mutable=False)
         self.rate_reaction_stoichiometry = Var(self.reaction_set, initialize=self.stoich_init)
         self.rate_reaction_stoichiometry.fix()
-        
-        # self.reactant_list=Set(initialize=["biomass"])
 
         #fuel dict
         self.limit_reactant_dict = Param(self.rate_reaction_idx, initialize={
             "R1": ("Sol","biomass"),
             "Rcoal": ("Sol","coal"),
+            "RCH4": ("Vap","CH4"),
         },
         within=Any)
 
-        
-            
-            
-
         dh_rxn_dict = {"R1": -2749556.40, # @ w=9%, h=6% ==> ncv=-2749556.40
-                       "Rcoal": -284675.1254 #[J/molCoal]
-
-                    #    "RCH4": -802.6
+                       "Rcoal": -284675.1254, #[J/molCoal]
+                       "RCH4": -802125 #based on 50 Mj/kg LHV
                        } 
         
         self.dh_rxn = Var(self.rate_reaction_idx, 
@@ -128,8 +128,6 @@ class BMCombReactionParameterData(ReactionParameterBlock):
                           domain=Reals,
                           doc="Heat of reaction")
         self.dh_rxn.fix()
-
-
 
     @classmethod
     def define_metadata(cls, obj):

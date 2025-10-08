@@ -127,7 +127,6 @@ configuration = {
            "elemental_composition":{"H":2,"O":1},
            "enth_mol_ig_comp": NIST,
            "cp_mol_ig_comp": NIST,
-           "pressure_sat_comp": NIST,
            'valid_phase_types': PT.vaporPhase,
            "parameter_data": {
                "mw": (18.0153e-3, pyunits.kg / pyunits.mol), 
@@ -140,11 +139,6 @@ configuration = {
                    "F": (-250.8810, pyunits.kJ / pyunits.mol),
                    "G": (223.3967, pyunits.J / pyunits.mol / pyunits.K),
                    "H": (-241.8264, pyunits.kJ / pyunits.mol),
-               },
-               "pressure_sat_comp_coeff": {
-                   "A": (4.6543, None), #temperature range 255.9 K - 373 K
-                   "B": (1435.264, pyunits.K),
-                   "C": (-64.848, pyunits.K),
                },
            },
        },

@@ -16,6 +16,8 @@ Fuel+Air --->[Reactor]<|---> Hot Flue -[Boiler] ---> Stack Flue
                             
 """
 
+import matplotlib.pyplot as plt
+
 #stoich_reactor_test
 from pyomo.environ import (
     Constraint,
@@ -115,6 +117,7 @@ f = {
     "gas_flow": 0.1717
 }
 
+
 fuel_total = f["bl_flow"]+f["gas_flow"]
 
 
@@ -128,7 +131,7 @@ m.fs.mix.air.mole_frac_comp[0,"uncombustible"].fix(1e-20)
 m.fs.mix.air.mole_frac_comp[0,"CH4"].fix(1e-20)
 m.fs.mix.air.temperature.fix(33+273.15)
 m.fs.mix.air.pressure.fix(101325)
-m.fs.mix.air.flow_mol.fix(f["air_flow"]) # /10 for keeping in initialisation bounds
+m.fs.mix.air.flow_mol.fix(f["air_flow"]) 
 
 # black liquor stream stream
 m.fs.mix.fuel.mole_frac_comp[0,"N2"].fix(1e-20)
@@ -147,7 +150,7 @@ m.fs.mix.fuel.flow_mol.fix(fuel_total)
 m.fs.R101.conversion_Rbl.fix(1)
 m.fs.R101.conversion_RCH4.fix(0.0)
 
-m.fs.R101.dh_rxn_RCH4.fix(-802125) #must fix with actual numbers not just .fix()
+m.fs.R101.dh_rxn_RCH4.fix(-802125)
 m.fs.R101.dh_rxn_Rbl.fix(-135150)
 
 m.fs.R101.outlet.temperature.fix(250+273.15)
@@ -159,10 +162,11 @@ m.fs.mix.initialize(outlvl=idaeslog.INFO)
 m.fs.R101.initialize(outlvl=idaeslog.INFO)
 
 m.fs.H101.inlet.flow_mol.fix(2177.69)
-m.fs.H101.inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=45*10*1000*pyunits.Pa,T=300*pyunits.K))
+m.fs.H101.inlet.enth_mol.fix(m.fs.steam_properties.htpx(p=45*10*1000*pyunits.Pa,T=(26+273.15)*pyunits.K))
 m.fs.H101.inlet.pressure.fix(45*10*1000)
 
-m.fs.H101.outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=45*10*1000*pyunits.Pa,T=(400+273.15)*pyunits.K))
+# m.fs.H101.outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=45*10*1000*pyunits.Pa,T=(300+273.15)*pyunits.K))
+m.fs.H101.outlet.enth_mol.fix(m.fs.steam_properties.htpx(p=45*10*1000*pyunits.Pa,T=(300+273.15)*pyunits.K))
 
 
 
@@ -187,19 +191,53 @@ m.fs.heat_transfer = Constraint(
     m.fs.time,
     rule=heat_transfer_rule
 )
+m.fs.boiler_efficiency = Expression(
+        expr = 100*value(m.fs.H101.heat_duty[0])/sum(m.fs.R101.control_volume.rate_reaction_extent[0,r]*(-m.fs.R101.reaction_package.dh_rxn[r]) for r in m.fs.R101.reaction_package.rate_reaction_idx)
+    )
 
-# m.fs.R101.heat_duty.fix(-value(m.fs.H101.heat_duty[0]))
-# m.fs.R101.outlet.temperature.unfix() #solving for flue temp
 
+solver=SolverFactory("ipopt")
+status=solver.solve(m,tee=True)
+case_fluetemp = value(m.fs.R101.outlet.temperature[0])
+case_eff = value(m.fs.boiler_efficiency)
 
-
+#constraints for different flue stack temperatures to analyse impact of better heat transfer 
+m.fs.R101.outlet.temperature[0].fix(300+273.15)
+m.fs.H101.inlet.flow_mol.unfix()
 
 print(degrees_of_freedom(m))
 assert degrees_of_freedom(m) == 0
-solver=SolverFactory("ipopt")
-status=solver.solve(m,tee=True)
+temps = range(600+273,300+273,-10)
+effs = [0]*len(temps)
+
+
+for i,flue_temp in enumerate(temps):
+    m.fs.R101.outlet.temperature[0].fix(flue_temp)
+    
+    solver=SolverFactory("ipopt")
+    status=solver.solve(m,tee=True)
+
+    m.fs.boiler_efficiency = Expression(
+        expr = 100*value(m.fs.H101.heat_duty[0])/sum(m.fs.R101.control_volume.rate_reaction_extent[0,r]*(-m.fs.R101.reaction_package.dh_rxn[r]) for r in m.fs.R101.reaction_package.rate_reaction_idx)
+    )
+    effs[i] = value(m.fs.boiler_efficiency)
+
+
 m.fs.R101.report()
 m.fs.H101.report()
-m.fs.mix.report()
+# m.fs.mix.report()
+print(f"{value(m.fs.boiler_efficiency):.2f}%")
+print(f"{(value(m.fs.R101.outlet.temperature[0])-273.15):.2f} C")
 # m.fs.R101.display()
 
+print(case_eff)
+print(case_fluetemp)
+
+plt.plot(temps,effs)
+plt.ylim(0,100)
+plt.xlabel("Flue Stack Temperature [K]")
+plt.ylabel("Boiler Efficiency [%]")
+plt.title("Boiler Efficiency Curve Against Stack Temperature")
+plt.plot([case_fluetemp],[case_eff],'ro',label='Case Study Conditions')
+plt.legend(loc='center left')
+plt.show()
